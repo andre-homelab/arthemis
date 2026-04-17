@@ -16,22 +16,23 @@
 <!-- Usando Card do shadcn -->
 <Card.Root class="metric-card">
   <Card.Content class="metric-content">
-    <span class="metric-label">{label}:</span>
-
-    <!-- Seta de tendência ao lado do label -->
-    <span class="trend-arrow" class:up={positive} class:down={!positive}>
-      {#if positive}
-        <!-- Seta pra cima -->
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 4l8 8H4z"/>
-        </svg>
-      {:else}
-        <!-- Seta pra baixo -->
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 20l-8-8h16z"/>
-        </svg>
-      {/if}
-    </span>
+    <div class="metric-header">
+      <span class="metric-label">{label}:</span>
+      <!-- Seta de tendência ao lado do label -->
+      <span class="trend-arrow" class:up={positive} class:down={!positive}>
+        {#if positive}
+          <!-- Seta pra cima -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+          </svg>
+        {:else}
+          <!-- Seta pra baixo -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M7 7l10 10M17 7v10H7"/>
+          </svg>
+        {/if}
+      </span>
+    </div>
 
     <!-- Valor principal em destaque -->
     <div class="metric-value">{value}</div>
@@ -46,41 +47,42 @@
 <style>
   /* :global() permite estilizar elementos de componentes externos como o shadcn */
   :global(.metric-card) {
-    min-width: 160px;
+    min-width: 180px;
     border-radius: 12px !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
   }
 
   :global(.metric-content) {
     padding: 16px 20px !important;
   }
 
+  .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
   .metric-label {
-    font-size: 13px;
-    color: #555;
+    font-size: 14px;
+    color: #444;
     font-weight: 500;
-    display: inline;
   }
 
-  .trend-arrow {
-    display: inline-flex;
-    margin-left: 4px;
-    vertical-align: middle;
-  }
-
-  .trend-arrow.up  { color: #22c55e; }
-  .trend-arrow.down { color: #ef4444; }
+  .trend-arrow.up  { color: #16a34a; }
+  .trend-arrow.down { color: #dc2626; }
 
   .metric-value {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
-    color: #1a1a1a;
-    margin: 4px 0;
-    letter-spacing: -0.5px;
+    color: #111;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
   }
 
   .metric-change {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
   }
 

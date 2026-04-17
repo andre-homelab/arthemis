@@ -1,142 +1,133 @@
 <script lang="ts">
-  // Tipos
-  interface Slice {
-    label: string;
-    value: number;
-    color: string;
-  }
+	import { Arc, PieChart, Text } from 'layerchart';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 
-  interface Props {
-    title: string;
-    slices: Slice[];
-  }
+	interface Slice {
+		label: string;
+		value: number;
+		color: string;
+	}
 
-  let { title, slices }: Props = $props();
+	interface Props {
+		title: string;
+		description?: string;
+		slices: Slice[];
+		footerTitle?: string;
+		footerDescription?: string;
+	}
 
-  // Helpers de geometria SVG
-  const CX = 110; // centro X
-  const CY = 110; // centro Y
-  const R  = 90;  // raio
+	let {
+		title,
+		description,
+		slices,
+		footerTitle,
+		footerDescription
+	}: Props = $props();
 
-  // Converte ângulo (radianos) para ponto na circunferência
-  function toPoint(angle: number, radius = R): [number, number] {
-    return [
-      CX + radius * Math.cos(angle),
-      CY + radius * Math.sin(angle),
-    ];
-  }
+	// Transforma as slices no formato esperado pelo PieChart
+	const chartData = $derived(slices.map(s => ({
+		name: s.label,
+		value: s.value,
+		color: s.color
+	})));
 
-  // Gera o atributo `d` de um caminho SVG para um slice de pizza
-  function slicePath(startAngle: number, endAngle: number): string {
-    const [x1, y1] = toPoint(startAngle);
-    const [x2, y2] = toPoint(endAngle);
-    // largeArcFlag = 1 se o slice for maior que 180°
-    const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
-    return [
-      `M ${CX} ${CY}`,
-      `L ${x1.toFixed(2)} ${y1.toFixed(2)}`,
-      `A ${R} ${R} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`,
-      'Z',
-    ].join(' ');
-  }
-
-  // Calcula os caminhos SVG de cada slice
-  // $derived garante recálculo quando `slices` muda
-  let paths = $derived(() => {
-    const total = slices.reduce((sum, s) => sum + s.value, 0);
-    let angle = -Math.PI / 2; // começa pelo topo (12h)
-
-    return slices.map((slice) => {
-      const sweep    = (slice.value / total) * 2 * Math.PI;
-      const path     = slicePath(angle, angle + sweep);
-      const pct      = Math.round((slice.value / total) * 100);
-      const midAngle = angle + sweep / 2;
-
-      // Posição do texto percentual (60% do raio)
-      const [lx, ly] = toPoint(midAngle, R * 0.6);
-
-      angle += sweep;
-      return { ...slice, path, pct, lx, ly };
-    });
-  });
+	// Gera a configuração do gráfico dinamicamente para o Tooltip e Container
+	const chartConfig = $derived(
+		slices.reduce((acc, slice) => {
+			acc[slice.label.toLowerCase()] = {
+				label: slice.label,
+				color: slice.color
+			};
+			return acc;
+		}, {} as Chart.ChartConfig)
+	);
 </script>
 
-<div class="pie-wrapper">
-  <h3 class="pie-title">{title}</h3>
-
-  <!-- Legenda -->
-  <div class="legend">
-    {#each slices as slice}
-      <span class="legend-item">
-        <span class="legend-dot" style="background:{slice.color}"></span>
-        {slice.label}
-      </span>
-    {/each}
-  </div>
-
-  <!-- SVG do gráfico de pizza -->
-  <svg viewBox="0 0 220 220" class="pie-svg">
-    {#each paths() as slice}
-      <!-- Cada slice é um <path> com o caminho calculado -->
-      <path
-        d={slice.path}
-        fill={slice.color}
-        stroke="white"
-        stroke-width="2"
-      />
-
-      <!-- Percentual centralizado no slice -->
-      <text
-        x={slice.lx}
-        y={slice.ly + 5}
-        text-anchor="middle"
-        font-size="14"
-        font-weight="600"
-        fill="white"
-      >
-        {slice.pct}%
-      </text>
-    {/each}
-  </svg>
-</div>
+<Card.Root class="flex flex-col">
+	<Card.Header class="items-center">
+		<Card.Title>{title}</Card.Title>
+		{#if description}
+			<Card.Description>{description}</Card.Description>
+		{/if}
+		<div class="legend">
+			{#each slices as slice}
+				<span class="legend-item">
+					<span class="legend-dot" style="background:{slice.color}"></span>
+					{slice.label}
+				</span>
+			{/each}
+		</div>
+	</Card.Header>
+	<Card.Content class="flex-1">
+		<Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[250px]">
+			<PieChart
+				data={chartData}
+				key="name"
+				value="value"
+				cRange={chartData.map((d) => d.color)}
+				c="color"
+				props={{
+					pie: {
+						motion: 'tween'
+					}
+				}}
+			>
+				{#snippet tooltip()}
+					<Chart.Tooltip hideLabel />
+				{/snippet}
+				{#snippet arc({ props, visibleData, index })}
+					{@const name = visibleData[index].name}
+					<Arc {...props}>
+						{#snippet children({ getArcTextProps })}
+							<Text
+								value={name}
+								{...getArcTextProps('centroid')}
+								font-size="12"
+								class="fill-background capitalize"
+							/>
+						{/snippet}
+					</Arc>
+				{/snippet}
+			</PieChart>
+		</Chart.Container>
+	</Card.Content>
+	{#if footerTitle || footerDescription}
+		<Card.Footer class="flex-col gap-2 text-sm">
+			{#if footerTitle}
+				<div class="flex items-center gap-2 leading-none font-medium">
+					{footerTitle} <TrendingUpIcon class="size-4" />
+				</div>
+			{/if}
+			{#if footerDescription}
+				<div class="leading-none text-muted-foreground">
+					{footerDescription}
+				</div>
+			{/if}
+		</Card.Footer>
+	{/if}
+</Card.Root>
 
 <style>
-  .pie-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+	.legend {
+		display: flex;
+		gap: 20px;
+		margin-top: 8px;
+	}
 
-  .pie-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-  }
+	.legend-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 14px;
+		font-weight: 500;
+		color: #444;
+	}
 
-  .legend {
-    display: flex;
-    gap: 16px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #555;
-  }
-
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
-  .pie-svg {
-    width: 100%;
-    height: auto;
-    max-width: 300px; /* Limite para não estourar em telas gigantes */
-  }
+	.legend-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 4px;
+	}
 </style>
