@@ -21,9 +21,14 @@
 </script>
 
 <Sidebar.Root>
+	<Sidebar.Header class="sidebar-header">
+		<div class="sidebar-header-row">
+			<Sidebar.GroupLabel class="sidebar-group-label">{groupLabel}</Sidebar.GroupLabel>
+			<Sidebar.Trigger class="sidebar-trigger" />
+		</div>
+	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>{groupLabel}</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -43,3 +48,27 @@
 		</Sidebar.Group>
 	</Sidebar.Content>
 </Sidebar.Root>
+
+<style>
+	.sidebar-header {
+		padding-bottom: 0.25rem;
+	}
+
+	.sidebar-header-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	:global(.sidebar-group-label) {
+		margin-right: auto;
+		padding-left: 0.25rem;
+	}
+
+	:global(.sidebar-trigger) {
+		margin-left: auto;
+		flex-shrink: 0;
+	}
+</style>
