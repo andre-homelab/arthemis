@@ -10,7 +10,8 @@
 		description,
 		slices,
 		footerTitle,
-		footerDescription
+		footerDescription,
+		class: className
 	}: PieChartProps = $props();
 
 	// Transforma as slices no formato esperado pelo PieChart
@@ -32,7 +33,7 @@
 	);
 </script>
 
-<Card.Root class="flex flex-col">
+<Card.Root class="flex flex-col {className}">
 	<Card.Header class="items-center">
 		<Card.Title>{title}</Card.Title>
 		{#if description}

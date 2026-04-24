@@ -103,14 +103,6 @@
 <div class="main-container">
 	<!-- Barra superior com ações -->
 	<header class="topbar">
-		<div class="topbar-actions">
-			<Button variant="secondary" size="sm" class="action-btn">Adicionar</Button>
-			<Button variant="secondary" size="sm" class="action-btn">Ordenar</Button>
-		</div>
-	</header>
-
-	<!-- Área de conteúdo -->
-	<div class="content-area">
 		<!-- Cards de métricas -->
 		<div class="metrics-grid">
 			{#each metrics as m (m.label)}
@@ -123,7 +115,14 @@
 				/>
 			{/each}
 		</div>
+		<div class="topbar-actions">
+			<Button variant="secondary" size="sm" class="action-btn">Adicionar</Button>
+			<Button variant="secondary" size="sm" class="action-btn">Ordenar</Button>
+		</div>
+	</header>
 
+	<!-- Área de conteúdo -->
+	<div class="content-area">
 		<!-- Linha de gráficos -->
 		<div class="charts-grid">
 			<!-- Gráfico de linhas integrado -->
@@ -141,9 +140,7 @@
 			/>
 
 			<!-- Gráfico de pizza -->
-			<div class="pie-card">
-				<PieChart title="Projetos" slices={projectSlices} />
-			</div>
+			<PieChart title="Projetos" slices={projectSlices} class="pie-card" />
 		</div>
 	</div>
 </div>
@@ -160,14 +157,19 @@
 
 	.topbar {
 		display: flex;
-		justify-content: flex-end;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 20px;
 		padding: 20px 32px 10px;
+		flex-wrap: wrap;
 	}
 
 	.topbar-actions {
 		display: flex;
 		gap: 12px;
 		align-items: center;
+		margin-left: auto;
+		flex-shrink: 0;
 	}
 
 	:global(.action-btn) {
@@ -192,14 +194,15 @@
 		display: flex;
 		gap: 20px;
 		flex-wrap: wrap;
-		width: 100%;
+		flex: 1 1 0;
+		min-width: 0;
 	}
 
 	/* Linha dos gráficos */
 	.charts-grid {
 		display: flex;
 		gap: 20px;
-		align-items: stretch;
+		align-items: flex-start;
 		flex-wrap: wrap;
 		width: 100%;
 	}
@@ -217,9 +220,6 @@
 	:global(.pie-card) {
 		flex: 1 1 100px;
 		min-width: 0;
-		border-radius: 12px !important;
-		border: none !important;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
 	}
 
 	@media (max-width: 1024px) {

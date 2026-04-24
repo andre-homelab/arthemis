@@ -46,6 +46,7 @@ export interface PieChartProps {
 	slices: PieChartSlice[];
 	footerTitle?: string;
 	footerDescription?: string;
+	class?: string;
 }
 
 // Tipos para Barra Lateral
