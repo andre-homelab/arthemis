@@ -1,16 +1,8 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
+  import type { MetricCardProps } from '$lib/types';
 
-  // Props tipadas com interface
-  interface Props {
-    label: string;
-    value: string;
-    change: string;
-    period: string;
-    positive: boolean; // true = seta verde pra cima, false = seta vermelha pra baixo
-  }
-
-  let { label, value, change, period, positive }: Props = $props();
+  let { label, value, change, period, positive }: MetricCardProps = $props();
 </script>
 
 <!-- Usando Card do shadcn -->

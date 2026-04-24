@@ -2,64 +2,59 @@
 	import MetricCard from '$lib/components/MetricCard.svelte';
 	import LineChart from '$lib/components/LineChart.svelte';
 	import PieChart from '$lib/components/PieChart.svelte';
+	import type { DataPoint } from '$lib/types';
 
 	import { Button } from '$lib/components/ui/button';
 
-	// Tipos
-  interface DataPoint {
-    date: Date;
-    impacto: number;
-    credito: number;
-  }
+	// Dados por período (simulados)
+	const dataByPeriod: Record<string, DataPoint[]> = {
+		'1M': [
+			{ date: new Date('2024-03-10'), impacto: 0.5, credito: 0.5 },
+			{ date: new Date('2024-03-12'), impacto: 0.6, credito: 0.75 },
+			{ date: new Date('2024-03-14'), impacto: 0.75, credito: 1.1 },
+			{ date: new Date('2024-03-16'), impacto: 0.9, credito: 1.5 },
+			{ date: new Date('2024-03-18'), impacto: 1.05, credito: 1.9 },
+			{ date: new Date('2024-03-20'), impacto: 1.2, credito: 2.2 },
+			{ date: new Date('2024-03-22'), impacto: 1.4, credito: 2.4 },
+			{ date: new Date('2024-03-24'), impacto: 1.55, credito: 2.5 },
+			{ date: new Date('2024-03-26'), impacto: 1.5, credito: 2.1 },
+			{ date: new Date('2024-03-28'), impacto: 1.6, credito: 1.5 },
+			{ date: new Date('2024-03-30'), impacto: 1.65, credito: 0.8 },
+			{ date: new Date('2024-04-01'), impacto: 1.7, credito: 0.55 },
+			{ date: new Date('2024-04-03'), impacto: 1.85, credito: 0.5 },
+			{ date: new Date('2024-04-05'), impacto: 2.1, credito: 0.55 },
+			{ date: new Date('2024-04-07'), impacto: 2.3, credito: 0.6 }
+		],
+		'1Y': [
+			{ date: new Date('2023-01-01'), impacto: 0.4, credito: 0.3 },
+			{ date: new Date('2023-02-01'), impacto: 0.55, credito: 0.5 },
+			{ date: new Date('2023-03-01'), impacto: 0.7, credito: 0.9 },
+			{ date: new Date('2023-04-01'), impacto: 0.9, credito: 1.4 },
+			{ date: new Date('2023-05-01'), impacto: 1.1, credito: 1.8 },
+			{ date: new Date('2023-06-01'), impacto: 1.3, credito: 2.1 },
+			{ date: new Date('2023-07-01'), impacto: 1.5, credito: 2.4 },
+			{ date: new Date('2023-08-01'), impacto: 1.7, credito: 1.8 },
+			{ date: new Date('2023-09-01'), impacto: 1.9, credito: 1.2 },
+			{ date: new Date('2023-10-01'), impacto: 2.1, credito: 0.7 },
+			{ date: new Date('2023-11-01'), impacto: 2.3, credito: 0.55 },
+			{ date: new Date('2023-12-01'), impacto: 2.5, credito: 0.6 }
+		],
+		All: [
+			{ date: new Date('2021-01-01'), impacto: 0.3, credito: 0.2 },
+			{ date: new Date('2022-01-01'), impacto: 0.8, credito: 0.9 },
+			{ date: new Date('2023-01-01'), impacto: 1.5, credito: 2.0 },
+			{ date: new Date('2024-01-01'), impacto: 2.3, credito: 0.6 }
+		]
+	};
 
-  // Dados por período (simulados)
-  const dataByPeriod: Record<string, DataPoint[]> = {
-    '1M': [
-      { date: new Date('2024-03-10'), impacto: 0.50, credito: 0.50 },
-      { date: new Date('2024-03-12'), impacto: 0.60, credito: 0.75 },
-      { date: new Date('2024-03-14'), impacto: 0.75, credito: 1.10 },
-      { date: new Date('2024-03-16'), impacto: 0.90, credito: 1.50 },
-      { date: new Date('2024-03-18'), impacto: 1.05, credito: 1.90 },
-      { date: new Date('2024-03-20'), impacto: 1.20, credito: 2.20 },
-      { date: new Date('2024-03-22'), impacto: 1.40, credito: 2.40 },
-      { date: new Date('2024-03-24'), impacto: 1.55, credito: 2.50 },
-      { date: new Date('2024-03-26'), impacto: 1.50, credito: 2.10 },
-      { date: new Date('2024-03-28'), impacto: 1.60, credito: 1.50 },
-      { date: new Date('2024-03-30'), impacto: 1.65, credito: 0.80 },
-      { date: new Date('2024-04-01'), impacto: 1.70, credito: 0.55 },
-      { date: new Date('2024-04-03'), impacto: 1.85, credito: 0.50 },
-      { date: new Date('2024-04-05'), impacto: 2.10, credito: 0.55 },
-      { date: new Date('2024-04-07'), impacto: 2.30, credito: 0.60 },
-    ],
-    '1Y': [
-      { date: new Date('2023-01-01'), impacto: 0.40, credito: 0.30 },
-      { date: new Date('2023-02-01'), impacto: 0.55, credito: 0.50 },
-      { date: new Date('2023-03-01'), impacto: 0.70, credito: 0.90 },
-      { date: new Date('2023-04-01'), impacto: 0.90, credito: 1.40 },
-      { date: new Date('2023-05-01'), impacto: 1.10, credito: 1.80 },
-      { date: new Date('2023-06-01'), impacto: 1.30, credito: 2.10 },
-      { date: new Date('2023-07-01'), impacto: 1.50, credito: 2.40 },
-      { date: new Date('2023-08-01'), impacto: 1.70, credito: 1.80 },
-      { date: new Date('2023-09-01'), impacto: 1.90, credito: 1.20 },
-      { date: new Date('2023-10-01'), impacto: 2.10, credito: 0.70 },
-      { date: new Date('2023-11-01'), impacto: 2.30, credito: 0.55 },
-      { date: new Date('2023-12-01'), impacto: 2.50, credito: 0.60 },
-    ],
-    'All': [
-      { date: new Date('2021-01-01'), impacto: 0.30, credito: 0.20 },
-      { date: new Date('2022-01-01'), impacto: 0.80, credito: 0.90 },
-      { date: new Date('2023-01-01'), impacto: 1.50, credito: 2.00 },
-      { date: new Date('2024-01-01'), impacto: 2.30, credito: 0.60 },
-    ],
-  };
+	// Estado reativo
+	type Period = '1M' | '1Y' | 'All';
+	const periodOptions: Period[] = ['1M', '1Y', 'All'];
+	let selectedPeriod = $state<Period>('1M');
 
-  // Estado reativo
-  type Period = '1M' | '1Y' | 'All';
-  let selectedPeriod = $state<Period>('1M');
+	// $derived recalcula automaticamente quando selectedPeriod muda
+	let data = $derived(dataByPeriod[selectedPeriod]);
 
-  // $derived recalcula automaticamente quando selectedPeriod muda
-  let data = $derived(dataByPeriod[selectedPeriod]);
-	
 	// Dados das métricas
 	interface Metric {
 		label: string;
@@ -98,10 +93,10 @@
 		{ label: 'Finalizados', value: 28, color: '#a855f7' }
 	];
 
-  const series = [
-    { key: 'impacto', label: 'Impacto', color: '#2563eb' },
-    { key: 'credito', label: 'Crédito', color: '#a855f7' }
-  ];
+	const series = [
+		{ key: 'impacto', label: 'Impacto', color: '#2563eb' },
+		{ key: 'credito', label: 'Crédito', color: '#a855f7' }
+	];
 </script>
 
 <!-- Conteúdo principal -->
@@ -109,17 +104,6 @@
 	<!-- Barra superior com ações -->
 	<header class="topbar">
 		<div class="topbar-actions">
-      <div class="period-selector flex gap-1 mr-4">
-        {#each ['1M', '1Y', 'All'] as period}
-          <Button 
-            variant={selectedPeriod === period ? 'default' : 'secondary'} 
-            size="sm" 
-            onclick={() => selectedPeriod = period as Period}
-          >
-            {period}
-          </Button>
-        {/each}
-      </div>
 			<Button variant="secondary" size="sm" class="action-btn">Adicionar</Button>
 			<Button variant="secondary" size="sm" class="action-btn">Ordenar</Button>
 		</div>
@@ -144,18 +128,21 @@
 		<div class="charts-grid">
 			<!-- Gráfico de linhas integrado -->
 			<LineChart
-        title="Impacto vs Crédito"
-        description="Evolução do impacto e crédito ao longo do tempo"
-        {data}
-        {series}
-        footerTitle="Crescimento constante detectado"
-        footerDescription="Dados atualizados para o período {selectedPeriod}"
-        class="line-card"
-      />
+				title="Impacto vs Crédito"
+				description="Evolução do impacto e crédito ao longo do tempo"
+				{data}
+				{series}
+				footerTitle="Crescimento constante detectado"
+				footerDescription={`Dados atualizados para o período ${selectedPeriod}`}
+				{selectedPeriod}
+				{periodOptions}
+				onPeriodChange={(period) => (selectedPeriod = period as Period)}
+				class="line-card"
+			/>
 
 			<!-- Gráfico de pizza -->
 			<div class="pie-card">
-				<PieChart title="Projetos" slices={projectSlices}/>
+				<PieChart title="Projetos" slices={projectSlices} />
 			</div>
 		</div>
 	</div>
@@ -180,7 +167,7 @@
 	.topbar-actions {
 		display: flex;
 		gap: 12px;
-    align-items: center;
+		align-items: center;
 	}
 
 	:global(.action-btn) {
@@ -236,7 +223,8 @@
 	}
 
 	@media (max-width: 1024px) {
-		:global(.pie-card), :global(.line-card) {
+		:global(.pie-card),
+		:global(.line-card) {
 			flex: 1 1 100%;
 		}
 	}

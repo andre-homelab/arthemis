@@ -3,20 +3,7 @@
 	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-
-	interface Slice {
-		label: string;
-		value: number;
-		color: string;
-	}
-
-	interface Props {
-		title: string;
-		description?: string;
-		slices: Slice[];
-		footerTitle?: string;
-		footerDescription?: string;
-	}
+	import type { PieChartProps } from '$lib/types';
 
 	let {
 		title,
@@ -24,7 +11,7 @@
 		slices,
 		footerTitle,
 		footerDescription
-	}: Props = $props();
+	}: PieChartProps = $props();
 
 	// Transforma as slices no formato esperado pelo PieChart
 	const chartData = $derived(slices.map(s => ({
