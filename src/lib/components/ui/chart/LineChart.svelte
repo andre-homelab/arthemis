@@ -6,7 +6,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import type { LineChartProps } from '$lib/types';
+	import type { LineChartProps } from '$lib/components/ui/chart/types';
 
 	let {
 		title,
@@ -46,7 +46,7 @@
 
 			{#if selectedPeriod && periodOptions?.length && onPeriodChange}
 				<div class="period-selector">
-					{#each periodOptions as period}
+					{#each periodOptions as period (period)}
 						<Button
 							variant={selectedPeriod === period ? 'default' : 'secondary'}
 							size="sm"
@@ -59,7 +59,7 @@
 			{/if}
 		</div>
 		<div class="legend">
-			{#each series as s}
+			{#each series as s (s.key)}
 				<span class="legend-item">
 					<span class="legend-dot" style="background:{s.color}"></span>
 					{s.label}
@@ -68,7 +68,7 @@
 		</div>
 	</Card.Header>
 	<Card.Content class="flex-1">
-		<Chart.Container config={chartConfig} class="min-h-[200px] w-full">
+		<Chart.Container config={chartConfig} class="min-h-50 w-full">
 			<LineChart
 				points={{ r: 4 }}
 				{data}

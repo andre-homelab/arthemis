@@ -3,7 +3,7 @@
 	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import type { PieChartProps } from '$lib/types';
+	import type { PieChartProps } from '$lib/components/ui/chart/types';
 
 	let {
 		title,
@@ -40,7 +40,7 @@
 			<Card.Description>{description}</Card.Description>
 		{/if}
 		<div class="legend">
-			{#each slices as slice}
+			{#each slices as slice (slice.label)}
 				<span class="legend-item">
 					<span class="legend-dot" style="background:{slice.color}"></span>
 					{slice.label}
@@ -49,7 +49,7 @@
 		</div>
 	</Card.Header>
 	<Card.Content class="flex-1">
-		<Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[250px]">
+		<Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-62.5">
 			<PieChart
 				data={chartData}
 				key="name"

@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
-  import type { MetricCardProps } from '$lib/types';
+  import type { MetricCardProps } from '$lib/components/ui/card/types';
 
   let { label, value, change, period, positive }: MetricCardProps = $props();
 </script>

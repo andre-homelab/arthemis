@@ -2,7 +2,7 @@
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import InboxIcon from '@lucide/svelte/icons/inbox';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { SidebarItem, SidebarProps } from '$lib/types';
+	import type { SidebarItem, SidebarProps } from '$lib/components/ui/sidebar/types';
 
 	const defaultItems: SidebarItem[] = [
 		{
@@ -12,6 +12,11 @@
 		},
 		{
 			title: 'Projects',
+			url: '#',
+			icon: InboxIcon
+		},
+		{
+			title: 'Organizações',
 			url: '#',
 			icon: InboxIcon
 		}

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import MetricCard from '$lib/components/MetricCard.svelte';
-	import LineChart from '$lib/components/LineChart.svelte';
-	import PieChart from '$lib/components/PieChart.svelte';
-	import type { DataPoint } from '$lib/types';
+	import MetricCard from '$lib/components/ui/card/MetricCard.svelte';
+	import LineChart from '$lib/components/ui/chart/LineChart.svelte';
+	import PieChart from '$lib/components/ui/chart/PieChart.svelte';
+	import type { DataPoint } from '$lib/components/ui/chart/types';
 
 	import { Button } from '$lib/components/ui/button';
 
