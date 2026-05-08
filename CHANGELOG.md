@@ -1,6 +1,8 @@
-# 0.0.1
-Setup inicial do projeto.
+# CHANGELOG
+## CREATE
 
-- Instalação do svelte, shadcn+svelte
-- Padronização do ambiente
-- ESLint
+- Criada página de cadastro de organizações - https://github.com/andre-homelab/arthemis/issues/18 - Tudo Feito
+
+## UPDATE
+
+## FIX

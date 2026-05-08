@@ -1,25 +1,27 @@
 <script lang="ts">
-	import HouseIcon from '@lucide/svelte/icons/house';
-	import InboxIcon from '@lucide/svelte/icons/inbox';
+	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
+	import FolderKanbanIcon from '@lucide/svelte/icons/folder-kanban';
+	import Building2Icon from '@lucide/svelte/icons/building-2';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { SidebarItem, SidebarProps } from '$lib/components/ui/sidebar/types';
 
 	const defaultItems: SidebarItem[] = [
 		{
 			title: 'Dashboard',
-			url: '#',
-			icon: HouseIcon
-		},
-		{
-			title: 'Projects',
-			url: '#',
-			icon: InboxIcon
+			url: '/',
+			icon: LayoutDashboardIcon
 		},
 		{
 			title: 'Organizações',
+			url: '/organizations',
+			icon: Building2Icon
+		},
+		{
+			title: 'Projetos',
 			url: '#',
-			icon: InboxIcon
-		}
+			icon: FolderKanbanIcon
+		},
+		
 	];
 
 	let { groupLabel = 'Arthemis', items = defaultItems }: SidebarProps = $props();
