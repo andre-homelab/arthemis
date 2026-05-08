@@ -2,7 +2,7 @@
 	import { LineChart } from 'layerchart';
 	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import { scaleUtc } from 'd3-scale';
-	import { curveNatural } from 'd3-shape';
+	import { curveLinear, curveNatural } from 'd3-shape';
 	import { Button } from '$lib/components/ui/button';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -18,7 +18,8 @@
 		selectedPeriod,
 		periodOptions,
 		onPeriodChange,
-		class: className
+		class: className,
+		dotted = false
 	}: LineChartProps = $props();
 
 	// Gera a configuração do gráfico dinamicamente com base nas séries
@@ -81,7 +82,10 @@
 					color: s.color
 				}))}
 				props={{
-					spline: { curve: curveNatural, motion: 'tween', strokeWidth: 2 },
+					spline: { curve: dotted ? curveLinear : curveNatural,
+						 	  motion: 'tween', 
+							  strokeWidth: 2,
+						      "stroke-dasharray": dotted ? "6 6" : undefined},
 					highlight: {
 						points: {
 							motion: 'none',
