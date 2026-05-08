@@ -70,7 +70,7 @@
 			<Form.Field {form} name="proponent_id">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Orgnanizações</Form.Label>
+						<Form.Label>Organizações</Form.Label>
 						<Select.Root type="single" {...props} bind:value={$formData.proponent_id}>
 							<Select.Trigger class="w-70">{triggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
