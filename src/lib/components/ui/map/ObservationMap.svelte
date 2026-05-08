@@ -7,7 +7,7 @@
   let mapInstance = $state<MapLibreMap | null>(null);
 
   let observations = $derived(
-    indicators?.flatMap((indicator, index) => 
+    indicators?.flatMap((indicator) => 
       indicator.observations.map(obs => ({
         id: obs.id,
         name: indicator.name,
