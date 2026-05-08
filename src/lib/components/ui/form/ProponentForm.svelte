@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import { proponentSchema } from './schema.js';
+	import { proponentSchema } from './ProponentFormschema.js';
 	import { cn } from '$lib/utils.js';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
