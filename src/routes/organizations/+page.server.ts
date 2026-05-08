@@ -1,7 +1,7 @@
 import type { PageServerLoad, Actions } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { proponentSchema } from '$lib/components/ui/proponent/schema.js';
+import { proponentSchema } from '$lib/components/ui/form/ProponentFormschema.js';
 import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async () => {

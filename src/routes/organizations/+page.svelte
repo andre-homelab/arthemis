@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProponentForm from '$lib/components/ui/proponent/ProponentForm.svelte';
+	import ProponentForm from '$lib/components/ui/form/ProponentForm.svelte';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
