@@ -7,7 +7,7 @@
 	const defaultItems: SidebarItem[] = [
 		{
 			title: 'Dashboard',
-			url: '#',
+			url: '/',
 			icon: HouseIcon
 		},
 		{
@@ -17,7 +17,7 @@
 		},
 		{
 			title: 'Organizações',
-			url: '#',
+			url: '/organizations',
 			icon: InboxIcon
 		}
 	];
