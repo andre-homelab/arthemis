@@ -20,6 +20,7 @@ export interface LineChartProps {
 	periodOptions?: readonly string[];
 	onPeriodChange?: (period: string) => void;
 	class?: string;
+	dotted?: boolean;
 }
 
 // Tipos para Gráfico de Pizza
