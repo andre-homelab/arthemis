@@ -25,18 +25,15 @@
             ]]
         }
     },
-
     activities: [
         {
             id: "hash:P",
             name: "Native Seedling Planting",
-
             indicators: [
                 {
                     id: "urgnd",
                     name: "Seedlings Planted",
                     unit: "units",
-                
                     observations: [
                         {
                             id: "scf34fe2",
@@ -79,6 +76,31 @@
                             }
                         }
                     ]
+                },
+                {
+                    id: "arhfi3",
+                    name: "Temperature",
+                    unit: "°C",
+                    observations: [
+                        {
+                            id: "rjie232",
+                            date: "2024-07-01",
+                            value: 14,
+                            position: { 
+                                type: "Point", 
+                                coordinates: [-52.36, -24.02] 
+                            }
+                        },
+                        {
+                            id: "e3o4",
+                            date: "2024-07-07",
+                            value: 17,
+                            position: { 
+                                type: "Point", 
+                                coordinates: [-52.37, -24.03] 
+                            }
+                        }
+                    ]
                 }
             ]
         }
@@ -94,12 +116,27 @@
       (activity) => activity.name === selectedActivityName
     )
   );
+
+  function generateColor(index: number) {
+    const baseHue = 120; // green
+    const hueShift = 45;
+    const newHue = (baseHue + (index * hueShift)) % 360;
+
+    return `hsl(${newHue}, 70%, 45%)`
+  }
+
+  const indicators = $derived(
+    selectedActivity?.indicators.map((indicator, index) => ({
+      ...indicator,
+      color: generateColor(index)
+    }))
+  )
 </script>
 
-<div class="page-wrapper">
+<div class="page-wrapper min-h-screen pt-8 pb-8 px-6">
   <header class="page-header">
     <h1 class="project-title">{project.name}</h1>
-    <div class="project-meta">
+    <div class="project-info">
       <p><strong>Duration:</strong> {project.lifetime_start} to {project.lifetime_end}</p>
       <p><strong>Location:</strong> {project.location.country} ({project.location.ecosystem})</p>
       <p><strong>Area:</strong> {project.location.extent_ha} ha</p>
@@ -108,20 +145,17 @@
 
   <div class="activity-card">
     <Select.Root type="single" name="selectedActivity" bind:value={selectedActivityName}>
-    <Select.Trigger class="rounded-md w-[40%]">
+      <Select.Trigger class="rounded-md w-[40%]">
         {#if selectedActivityName} 
           {selectedActivityName} 
         {:else} 
-          Select an activity 
-          {/if}
-    </Select.Trigger>
+          <p>Select an activity</p>
+        {/if}
+      </Select.Trigger>
       <Select.Content class="rounded-md">
         <Select.Group>
           {#each project.activities as activity (activity.id)}
-            <Select.Item
-              value={activity.name}
-              label={activity.name}
-            >
+            <Select.Item value={activity.name} label={activity.name}>
               {activity.name}
             </Select.Item>
           {/each}
@@ -130,25 +164,18 @@
     </Select.Root>
 
     <div class="map-wrapper">
-      <h2 class="section-title">Observation Map</h2>
-      <ObservationMap 
-      projectLocation={project.location} 
-      selectedActivity={selectedActivity} 
-      />
+      <h2 class="map-title">Observation Map</h2>
+      <ObservationMap projectLocation={project.location} indicators={indicators}/>
     </div>
   </div>
 
 </div>
 
 <style>
-  .page-wrapper {
-    padding: 1.5rem;
-    max-width: 64rem;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+   .page-wrapper {
     gap: 1.5rem;
     font-family: system-ui, sans-serif;
+    background-color: #ffffff;
   }
 
   .page-header {
@@ -162,14 +189,14 @@
     margin: 0 0 0.5rem 0;
   }
 
-  .project-meta {
+  .project-info {
     display: flex;
     gap: 1rem;
     font-size: 0.875rem;
     color: #4b5563;
   }
 
-  .project-meta p {
+  .project-info p {
     margin: 0;
   }
 
@@ -181,29 +208,11 @@
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
-   .activity-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.5rem;
-  }
-
-  /* .activity-select {
-    width: 100%;
-    max-width: 50%;
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    background-color: #ffffff;
-    font-size: 1rem;
-  } */
-
   .map-wrapper {
     margin-top: 1rem;
   }
 
-  .section-title {
+  .map-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: #111827;

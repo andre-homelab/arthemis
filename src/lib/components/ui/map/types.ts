@@ -9,6 +9,7 @@ export interface Indicator {
   name: string;
   unit: string;
   observations: Observation[];
+  color?: string;
 }
 
 export interface Observation {
@@ -23,7 +24,7 @@ export interface Observation {
 
 export interface ObservationMapProps {
     projectLocation: ProjectLocation;
-    selectedActivity?: Activity;
+    indicators?: Indicator[];
   }
 
 export interface Project {

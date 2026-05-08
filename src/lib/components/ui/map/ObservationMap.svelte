@@ -3,12 +3,11 @@
   import type { Map as MapLibreMap } from 'maplibre-gl';
   import type { ObservationMapProps } from '$lib/components/ui/map/types';
 
-
-  let { projectLocation, selectedActivity }: ObservationMapProps = $props();
+  let { projectLocation, indicators }: ObservationMapProps = $props();
   let mapInstance = $state<MapLibreMap | null>(null);
 
   let observations = $derived(
-    selectedActivity?.indicators.flatMap(indicator => 
+    indicators?.flatMap((indicator, index) => 
       indicator.observations.map(obs => ({
         id: obs.id,
         name: indicator.name,
@@ -16,7 +15,8 @@
         unit: indicator.unit,
         date: obs.date,
         lng: obs.position.coordinates[0],
-        lat: obs.position.coordinates[1]
+        lat: obs.position.coordinates[1],
+        color: indicator.color
       }))
     ) || []
   );
@@ -78,7 +78,7 @@
     {#each observations as obs (obs.id)}
       <MapMarker longitude={obs.lng} latitude={obs.lat}>
         <MarkerContent>
-          <div class="marker-dot"></div>
+          <div class="marker-dot" style="background-color: {obs.color};"></div>
         </MarkerContent>
         
         <MarkerPopup>
@@ -107,7 +107,6 @@
   .marker-dot {
     width: 16px;
     height: 16px;
-    background-color: #3b82f6;
     border: 2px solid #ffffff;
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
