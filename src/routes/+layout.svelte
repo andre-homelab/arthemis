@@ -16,8 +16,8 @@
 				<Sidebar.Trigger />
 			</div>
 		{/if}
-		<div class="flex flex-1 flex-col overflow-hidden">
-			<main class="flex flex-1 flex-col overflow-auto">
+		<div class="flex flex-1 flex-col overflow-auto">
+			<main class="flex flex-1 flex-col">
 				{@render children()}
 			</main>
 		</div>
