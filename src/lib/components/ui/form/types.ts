@@ -1,6 +1,8 @@
 import type { SuperValidated, Infer } from 'sveltekit-superforms';
 import type { ProponentSchema } from './ProponentFormschema.js';
 import type { ProjectSchema } from './ProjectFormSchema.js';
+import type { UserSchema } from './UserFormSchema.js';
+import type { UserLoginSchema } from './UserLoginSchema.js';
 
 // Props para os componentes do formulário das Organizações
 export interface ProponentFormProps {
@@ -28,6 +30,22 @@ export interface ProponentOption {
 export interface ProjectFormProps {
 	// Dados do formulário vindos do load() via superValidate
 	data: SuperValidated<Infer<ProjectSchema>>;
+	// Lista de proponentes para o campo de seleção
+	proponents: ProponentOption[];
+	// Título exibido no card do formulário
+	title?: string;
+	// Subtítulo/descrição exibida abaixo do título
+	description?: string;
+	// Texto do botão de submit
+	submitLabel?: string;
+	// Classe CSS adicional para o card externo
+	class?: string;
+}
+
+// Props para os componentes do formulário do Cadastro de Usuário
+export interface UserFormProps {
+	// Dados do formulário vindos do load() via superValidate
+	data: SuperValidated<Infer<UserSchema>>;
 	// Lista de proponentes para o campo de seleção
 	proponents: ProponentOption[];
 	// Título exibido no card do formulário
