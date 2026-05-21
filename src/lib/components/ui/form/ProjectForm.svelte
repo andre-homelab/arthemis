@@ -14,6 +14,7 @@
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { RangeCalendar } from '$lib/components/ui/range-calendar/index.js';
 	import type { DateRange } from 'bits-ui';
+	import { idText } from 'typescript';
 
 	let {
 		data,
@@ -24,8 +25,9 @@
 		class: className
 	}: ProjectFormProps = $props();
 
+	// "data" vai precisar ser um JSON
 	const form = superForm(data, {
-		validators: zod4Client(projectSchema)
+		validators: zod4Client(projectSchema),
 	});
 
 	const { form: formData, enhance, submitting } = form;
@@ -55,6 +57,17 @@
 		if (dateRange.start) $formData.lifetime_start = dateRange.start.toDate(getLocalTimeZone());
 		if (dateRange.end) $formData.lifetime_end = dateRange.end.toDate(getLocalTimeZone());
 	});
+
+	if (!$formData.locations) $formData.locations = [];
+
+	function addLocation() {
+		$formData.locations = [...$formData.locations, { 
+			id: crypto.randomUUID(), ecosystem: '', extent_ha: 0, country: '', position: '' 
+		}];
+	}
+	function removeLocation(index: number) {
+		$formData.locations = $formData.locations.filter((_, i) => i !== index);
+	}
 </script>
 
 <Card.Root class={cn('form-card', className)}>
@@ -72,7 +85,7 @@
 					{#snippet children({ props })}
 						<Form.Label>Organizações</Form.Label>
 						<Select.Root type="single" {...props} bind:value={$formData.proponent_id}>
-							<Select.Trigger class="w-70">{triggerContent}</Select.Trigger>
+							<Select.Trigger class="rounded-md max-w-xl w-full">{triggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
 								{#each proponents as p (p.id)}
 									<Select.Item value={p.id}>{p.name}</Select.Item>
@@ -94,6 +107,7 @@
 							bind:value={$formData.name}
 							placeholder="Nome do projeto"
 							maxlength={150}
+							class = "rounded-md max-w-xl w-full"
 						/>
 					{/snippet}
 				</Form.Control>
@@ -141,12 +155,93 @@
 							{...props}
 							bind:value={$formData.justification}
 							placeholder="Descreva a justificativa do projeto..."
+							class = "rounded-md w-full min-h-30"
 						/>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
 
+			<div class="flex flex-col gap-3">
+				<Label>Localizações do Projeto</Label>
+
+				<div class="flex flex-col gap-3">
+					{#each $formData.locations as location, id (location.id)}
+						<div class="border flex flex-col p-4 relative rounded-xl">
+							<Button type="button" variant="destructive" size="icon" class="absolute top-2 right-2 h-8 w-8" onclick={() => removeLocation(id)}>✕</Button>
+							
+							<div class="flex flex-row flex-wrap gap-4 pr-10">
+								<Form.Field {form} name={`locations[${id}].ecosystem`} class="w-full md:w-[calc(50%-0.5rem)]">
+									<Form.Control>
+										{#snippet children({ props })}
+											<Form.Label class="text-xs">Ecossistema</Form.Label>
+											<Input 
+												{...props} 
+												bind:value={$formData.locations[id].ecosystem} 
+												placeholder="Ex: Amazônia" 
+												class = "rounded-md"
+											/>
+										{/snippet}
+									</Form.Control>
+									<Form.FieldErrors />
+								</Form.Field>
+
+								<Form.Field {form} name={`locations[${id}].country`} class="w-full md:w-[calc(50%-0.5rem)]">
+									<Form.Control>
+										{#snippet children({ props })}
+											<Form.Label class="text-xs">País</Form.Label>
+											<Input 
+												{...props} 
+												bind:value={$formData.locations[id].country} 
+												placeholder="Ex: Brasil" 
+												class = "rounded-md"
+											/>
+										{/snippet}
+									</Form.Control>
+									<Form.FieldErrors />
+								</Form.Field>
+
+								<Form.Field {form} name={`locations[${id}].extent_ha`} class="w-full md:w-[calc(50%-0.5rem)]">
+									<Form.Control>
+										{#snippet children({ props })}
+											<Form.Label class="text-xs">Extensão (Hectares)</Form.Label>
+											<Input 
+												{...props} 
+												bind:value={$formData.locations[id].extent_ha} 
+												type="number" 
+												step="0.01" 
+												class = "rounded-md"
+											/>
+										{/snippet}
+									</Form.Control>
+									<Form.FieldErrors />
+								</Form.Field>
+
+								<Form.Field {form} name={`locations[${id}].position`} class="w-full md:w-[calc(50%-0.5rem)]">
+									<Form.Control>
+										{#snippet children({ props })}
+											<Form.Label class="text-xs">Posição / Coordenadas</Form.Label>
+											<Input 
+												{...props} 
+												bind:value={$formData.locations[id].position} 
+												placeholder="Ex: -3.4653, -62.2159" 
+												class = "rounded-md"
+											/>
+										{/snippet}
+									</Form.Control>
+									<Form.FieldErrors />
+								</Form.Field>
+
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<div class="flex">
+					<Button type="button" variant="outline" size="sm" onclick={addLocation}>+ Novo Local</Button>
+				</div>
+			</div>
+		
 			<Card.Footer class="form-footer">
 				<Button type="submit" disabled={$submitting}>
 					{$submitting ? 'Salvando...' : submitLabel}
@@ -187,5 +282,9 @@
 		padding-left: 0 !important;
 		padding-right: 0 !important;
 		padding-bottom: 0 !important;
+	}
+
+	.field {
+
 	}
 </style>
