@@ -59,15 +59,38 @@
 	});
 
 	if (!$formData.locations) $formData.locations = [];
+   	if (!$formData.activities) $formData.activities = [];
+    if (!$formData.indicators) $formData.indicators = [];
 
 	function addLocation() {
 		$formData.locations = [...$formData.locations, { 
 			id: crypto.randomUUID(), ecosystem: '', extent_ha: 0, country: '', position: '' 
 		}];
 	}
+
 	function removeLocation(index: number) {
 		$formData.locations = $formData.locations.filter((_, i) => i !== index);
 	}
+
+	function addActivity() {
+		$formData.activities = [...$formData.activities, {
+			id: crypto.randomUUID(), name: '', description: '', justification: ''
+       	}];
+   }
+
+   function removeActivity(index: number) {
+       $formData.activities = $formData.activities.filter((_, i) => i !== index);
+   }
+
+   function addIndicator() {
+       $formData.indicators = [...$formData.indicators, {
+           id: '', location_id: '', activity_id: '', name: '', unit: '',
+           value_baseline: 0, value_reference: 0, observation_method: '', justification: ''
+       }];
+   }
+   function removeIndicator(index: number) {
+       $formData.indicators = $formData.indicators.filter((_, i) => i !== index);
+   }
 </script>
 
 <Card.Root class={cn('form-card', className)}>
@@ -162,84 +185,69 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<div class="flex flex-col gap-3">
+			<div class="flex flex-col gap-4">
 				<Label>Localizações do Projeto</Label>
 
-				<div class="flex flex-col gap-3">
-					{#each $formData.locations as location, id (location.id)}
-						<div class="border flex flex-col p-4 relative rounded-xl">
-							<Button type="button" variant="destructive" size="icon" class="absolute top-2 right-2 h-8 w-8" onclick={() => removeLocation(id)}>✕</Button>
-							
-							<div class="flex flex-row flex-wrap gap-4 pr-10">
-								<Form.Field {form} name={`locations[${id}].ecosystem`} class="w-full md:w-[calc(50%-0.5rem)]">
+				{#each $formData.locations as location, id (location.id)}
+					<Card.Root class="relative">
+						<Card.Header class="flex flex-row justify-between">
+							<Card.Title class="text-xs">
+							    Local #{id + 1}
+							</Card.Title>
+							<Button type="button" variant="destructive" size="icon" class="h-8 w-8" onclick={() => removeLocation(id)}>
+								✕
+							</Button>
+						</Card.Header>
+						
+						<Card.Content>
+							<div class="flex flex-row flex-wrap gap-4">
+								<Form.Field {form} name={`locations[${id}].ecosystem`} class="field">
 									<Form.Control>
 										{#snippet children({ props })}
 											<Form.Label class="text-xs">Ecossistema</Form.Label>
-											<Input 
-												{...props} 
-												bind:value={$formData.locations[id].ecosystem} 
-												placeholder="Ex: Amazônia" 
-												class = "rounded-md"
-											/>
+											<Input {...props} bind:value={$formData.locations[id].ecosystem} placeholder="Ex: Amazônia" />
 										{/snippet}
 									</Form.Control>
 									<Form.FieldErrors />
 								</Form.Field>
 
-								<Form.Field {form} name={`locations[${id}].country`} class="w-full md:w-[calc(50%-0.5rem)]">
+								<Form.Field {form} name={`locations[${id}].country`} class="field">
 									<Form.Control>
 										{#snippet children({ props })}
 											<Form.Label class="text-xs">País</Form.Label>
-											<Input 
-												{...props} 
-												bind:value={$formData.locations[id].country} 
-												placeholder="Ex: Brasil" 
-												class = "rounded-md"
-											/>
+											<Input {...props} bind:value={$formData.locations[id].country} placeholder="Ex: Brasil" />
 										{/snippet}
 									</Form.Control>
 									<Form.FieldErrors />
 								</Form.Field>
 
-								<Form.Field {form} name={`locations[${id}].extent_ha`} class="w-full md:w-[calc(50%-0.5rem)]">
+								<Form.Field {form} name={`locations[${id}].extent_ha`} class="field">
 									<Form.Control>
 										{#snippet children({ props })}
 											<Form.Label class="text-xs">Extensão (Hectares)</Form.Label>
-											<Input 
-												{...props} 
-												bind:value={$formData.locations[id].extent_ha} 
-												type="number" 
-												step="0.01" 
-												class = "rounded-md"
-											/>
+											<Input {...props} bind:value={$formData.locations[id].extent_ha} type="number" step="0.01" />
 										{/snippet}
 									</Form.Control>
 									<Form.FieldErrors />
 								</Form.Field>
-
-								<Form.Field {form} name={`locations[${id}].position`} class="w-full md:w-[calc(50%-0.5rem)]">
+ 
+								<Form.Field {form} name={`locations[${id}].position`} class="field">
 									<Form.Control>
 										{#snippet children({ props })}
 											<Form.Label class="text-xs">Posição / Coordenadas</Form.Label>
-											<Input 
-												{...props} 
-												bind:value={$formData.locations[id].position} 
-												placeholder="Ex: -3.4653, -62.2159" 
-												class = "rounded-md"
-											/>
+											<Input {...props} bind:value={$formData.locations[id].position} placeholder="Ex:" />
 										{/snippet}
 									</Form.Control>
 									<Form.FieldErrors />
 								</Form.Field>
-
 							</div>
-						</div>
-					{/each}
-				</div>
+						</Card.Content>
+					</Card.Root>
+				{/each}
 
-				<div class="flex">
-					<Button type="button" variant="outline" size="sm" onclick={addLocation}>+ Novo Local</Button>
-				</div>
+				<Button type="button" variant="outline" size="sm" class="self-start" onclick={addLocation}>
+					+ Novo Local
+				</Button>
 			</div>
 		
 			<Card.Footer class="form-footer">
@@ -284,7 +292,10 @@
 		padding-bottom: 0 !important;
 	}
 
-	.field {
-
+	:global(.field) {
+		width: 100%;
+		@media (width >= 48rem /* 768px */) {
+        	width: calc(50% - 0.5rem /* 8px */);
+    	}
 	}
 </style>

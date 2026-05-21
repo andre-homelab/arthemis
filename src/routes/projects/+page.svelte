@@ -21,7 +21,7 @@
 		flex-direction: column;
 		padding: 32px;
 		gap: 24px;
-		max-width: 640px;
+		width: 100%;
 	}
 
 	.page-header {

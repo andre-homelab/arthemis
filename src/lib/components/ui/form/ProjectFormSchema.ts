@@ -1,5 +1,26 @@
 import { z } from 'zod';
 
+const activitySchema = z.object({
+   id: z.string(),
+   name: z.string().min(2, 'Nome da atividade é obrigatório'),
+   description: z.string().min(5, 'Descrição é obrigatória'),
+   justification: z.string().min(5, 'Justificativa é obrigatória')
+});
+
+
+const indicatorSchema = z.object({
+   id: z.string(),
+   location_id: z.string().min(1, 'Vincule a um local'),
+   activity_id: z.string().min(1, 'Vincule a uma atividade'),
+  
+   name: z.string().min(2, 'Nome é obrigatório'),
+   unit: z.string().min(1, 'Unidade é obrigatória'),
+   value_baseline: z.number().default(0),
+   value_reference: z.number().default(0),
+   observation_method: z.string().min(10, 'Método de observação é obrigatório'),
+   justification: z.string().min(10, 'Justificativa é obrigatória')
+})
+
 export const locationSchema = z.object({
 	id: z.string(),
 	ecosystem: z.string().min(2, 'Ecossistema é obrigatório'),
@@ -21,6 +42,8 @@ export const projectSchema = z.object({
 	justification: z.string().min(10, 'Justificativa deve ter pelo menos 10 caracteres'),
 
 	locations: z.array(locationSchema).default([]),
+	activities: z.array(activitySchema).default([]),
+   	indicators: z.array(indicatorSchema).default([])
 }).refine(
 	(data) => data.lifetime_end >= data.lifetime_start,
 	{
