@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 export const userSchema = z.object({
-	// FK para a tabela proponent: uuid do proponente selecionado
-	proponent_id: z.uuid('Selecione uma organização válida'),
+	proponent_id: z.string().min(1, 'Selecione uma organização válida'),
+	username: z.string().min(1, 'Informe o usuário').max(150, 'Usuário muito longo'),
 	email: z.email('E-mail inválido').max(150, 'E-mail muito longo'),
-	password_hash: z
+	password: z
 		.string()
 		.min(8, 'Senha deve ter pelo menos 8 caracteres')
 		.max(255, 'Senha muito longa'),

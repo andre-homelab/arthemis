@@ -26,7 +26,7 @@
 	const { form: formData, enhance, submitting } = form;
 
 	const proponentTriggerContent = $derived(
-		proponents.find((p) => p.id === $formData.proponent_id)?.name ?? 'Selecione uma organização'
+		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione uma organização'
 	);
 
 	const roleOptions = [
@@ -58,7 +58,7 @@
 							<Select.Trigger class="w-70">{proponentTriggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
 								{#each proponents as proponent (proponent.id)}
-									<Select.Item value={proponent.id}>{proponent.name}</Select.Item>
+									<Select.Item value={String(proponent.id)}>{proponent.name}</Select.Item>
 								{/each}
 							</Select.Content>
 						</Select.Root>
@@ -85,20 +85,37 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<Form.Field {form} name="password_hash">
+			<Form.Field {form} name="username">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Usuário</Form.Label>
+						<Input
+							{...props}
+							bind:value={$formData.username}
+							placeholder="Nome do Usuário"
+							maxlength={150}
+							autocomplete="username"
+						/>
+					{/snippet}
+				</Form.Control>
+				<Form.Description>Nome usado para autenticação.</Form.Description>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<Form.Field {form} name="password">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Senha</Form.Label>
 						<Input
 							{...props}
 							type="password"
-							bind:value={$formData.password_hash}
+							bind:value={$formData.password}
 							placeholder="Senha do usuário"
 							maxlength={255}
+							autocomplete="new-password"
 						/>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>A senha deve ser armazenada com hash no banco de dados.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
