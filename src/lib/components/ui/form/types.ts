@@ -57,3 +57,17 @@ export interface UserFormProps {
 	// Classe CSS adicional para o card externo
 	class?: string;
 }
+
+// Props para os componentes do formulário do Login de Usuário
+export interface UserLoginProps {
+	// Dados do formulário vindos do load() via superValidate
+	data: SuperValidated<Infer<UserLoginSchema>>;
+	// Título exibido no card do formulário
+	title?: string;
+	// Subtítulo/descrição exibida abaixo do título
+	description?: string;
+	// Texto do botão de submit
+	submitLabel?: string;
+	// Classe CSS adicional para o card externo
+	class?: string;
+}
