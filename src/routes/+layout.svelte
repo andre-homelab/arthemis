@@ -3,10 +3,13 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/ui/sidebar/AppSidebar.svelte';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 
 	let sidebarOpen = $state(true);
 	let { children } = $props();
 </script>
+
+<Toaster />
 
 <Sidebar.Provider bind:open={sidebarOpen}>
 	<div class="bg-background text-foreground flex h-screen w-full overflow-hidden">
