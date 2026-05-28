@@ -12,7 +12,7 @@
 	let {
 		data,
 		title = 'Entrar',
-		description = 'Acesse com seu e-mail e senha.',
+		description = 'Acesse com seu usuário e senha.',
 		submitLabel = 'Entrar',
 		class: className
 	}: UserLoginProps = $props();
@@ -34,17 +34,16 @@
 
 	<Card.Content>
 		<form method="POST" use:enhance class="form-body">
-			<Form.Field {form} name="email">
+			<Form.Field {form} name="username">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>E-mail</Form.Label>
+						<Form.Label>Usuário</Form.Label>
 						<Input
 							{...props}
-							type="email"
-							bind:value={$formData.email}
-							placeholder="usuario@organizacao.com"
+							bind:value={$formData.username}
+							placeholder="Nome do Usuário"
 							maxlength={150}
-							autocomplete="email"
+							autocomplete="username"
 						/>
 					{/snippet}
 				</Form.Control>

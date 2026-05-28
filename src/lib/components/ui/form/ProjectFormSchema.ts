@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const projectSchema = z.object({
 	// FK para a tabela proponent — uuid do proponente selecionado
-	proponent_id: z.uuid('Selecione uma organização válida'),
+	proponent_id: z.string().min(1, 'Selecione uma organização válida'),
 
 	name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(150, 'Nome muito longo'),
 
