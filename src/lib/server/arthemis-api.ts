@@ -166,6 +166,26 @@ export async function createBrainUser(input: {
 	return response.json();
 }
 
+export async function createProponent(input: {
+	name: string,
+	email: string;
+}, token: string): Promise<unknown> {
+	const response = await fetch(`${BRAIN_BASE_URL}/proponent/create`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json', 
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(input)
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao cadastrar organização.'));
+	}
+
+	return response.json();
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
