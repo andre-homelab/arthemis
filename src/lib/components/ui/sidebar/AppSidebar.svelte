@@ -2,6 +2,8 @@
 	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
 	import FolderKanbanIcon from '@lucide/svelte/icons/folder-kanban';
 	import Building2Icon from '@lucide/svelte/icons/building-2';
+	import UsersIcon from '@lucide/svelte/icons/users';
+	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { SidebarItem, SidebarProps } from '$lib/components/ui/sidebar/types';
 
@@ -21,7 +23,16 @@
 			url: '/projects',
 			icon: FolderKanbanIcon
 		},
-		
+		{
+			title: 'Usuários',
+			url: '/users',
+			icon: UsersIcon
+		},
+		{
+			title: 'Login',
+			url: '/login',
+			icon: LogInIcon
+		}
 	];
 
 	let { groupLabel = 'Arthemis', items = defaultItems }: SidebarProps = $props();

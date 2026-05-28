@@ -14,7 +14,7 @@
 	import { getLocalTimeZone } from '@internationalized/date';
 	import { RangeCalendar } from '$lib/components/ui/range-calendar/index.js';
 	import type { DateRange } from 'bits-ui';
-	import { idText } from 'typescript';
+	import { untrack } from 'svelte';
 
 	let {
 		data,
@@ -33,7 +33,7 @@
 	const { form: formData, enhance, submitting } = form;
 
 	const triggerContent = $derived(
-		proponents.find((p) => p.id === $formData.proponent_id)?.name ?? 'Selecione sua Organização'
+		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione sua Organização'
 	);
 
 	/*
@@ -54,8 +54,12 @@
 	 para que o Zod consiga validar e exibir o erro corretamente.
 	*/
 	$effect(() => {
-		if (dateRange.start) $formData.lifetime_start = dateRange.start.toDate(getLocalTimeZone());
-		if (dateRange.end) $formData.lifetime_end = dateRange.end.toDate(getLocalTimeZone());
+		const start = dateRange.start;
+		const end = dateRange.end;
+		untrack(() => {
+			if (start) $formData.lifetime_start = start.toDate(getLocalTimeZone());
+			if (end) $formData.lifetime_end = end.toDate(getLocalTimeZone());
+		});
 	});
 
 	if (!$formData.locations) $formData.locations = [];
@@ -111,7 +115,7 @@
 							<Select.Trigger class="rounded-md max-w-xl w-full">{triggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
 								{#each proponents as p (p.id)}
-									<Select.Item value={p.id}>{p.name}</Select.Item>
+									<Select.Item value={String(p.id)}>{p.name}</Select.Item>
 								{/each}
 							</Select.Content>
 						</Select.Root>
