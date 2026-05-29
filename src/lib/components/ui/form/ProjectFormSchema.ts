@@ -44,12 +44,47 @@ export const projectSchema = z.object({
 	locations: z.array(locationSchema).default([]),
 	activities: z.array(activitySchema).default([]),
    	indicators: z.array(indicatorSchema).default([])
-}).refine(
-	(data) => data.lifetime_end >= data.lifetime_start,
-	{
-		message: 'A data de término não pode ser anterior à data de início',
-		path: ['lifetime_end']
-	}
-);
+})
+	.refine((data) => data.lifetime_start <= data.lifetime_end, {
+			message: 'A data de término não pode ser anterior à data de início',
+			path: ['lifetime_end']
+	})
+	
+	.refine((data) => data.locations.length >= 1, {
+		message: 'O projeto deve conter pelo menos uma localização.',
+		path: ['locations']
+	})
+
+	.refine((data) => data.activities.length >= 1, {
+		message: 'O projeto deve conter pelo menos uma atividade.',
+		path: ['activities']
+	})
+
+	.refine((data) => data.indicators.length >= 1, {
+		message: 'O projeto deve conter pelo menos um indicador.',
+		path: ['indicators']
+	})
+
+	.refine(
+		(data) => {
+			const linkedLocationIds = new Set(data.indicators.map((i) => i.location_id));
+			return data.locations.every((loc) => linkedLocationIds.has(loc.id));
+		},
+		{
+			message: 'Cada local cadastrado deve possuir pelo menos um indicador vinculado.',
+			path: ['locations']
+		}
+	)
+
+	.refine(
+		(data) => {
+			const linkedActivityIds = new Set(data.indicators.map((i) => i.activity_id));
+			return data.activities.every((act) => linkedActivityIds.has(act.id));
+		},
+		{
+			message: 'Cada atividade cadastrada deve possuir pelo menos um indicador vinculado.',
+			path: ['activities']
+		}
+	);
 
 export type ProjectSchema = typeof projectSchema;
