@@ -1,48 +1,33 @@
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { projectSchema } from '$lib/components/ui/form/ProjectFormSchema.js';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, } from './$types.js';
-import axios from "axios";
+import { 
+    listProponents, 
+    createProject, 
+    createLocation, 
+    createActivity, 
+    createIndicator, 
+} from '$lib/server/arthemis-api.js';
 
-const GATEWAY_URL = "http://localhost";
 
 export const load: PageServerLoad = async ({ cookies }) => {
-	// Get token from cookies; cookie will need to be set on login (https://svelte.dev/tutorial/kit/cookies)
-	// const token = cookies.get('auth');
-
-	const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYWRtaW4iOnRydWUsImlhdCI6MTcxNjMxMTUwMCwiZXhwIjoxNzg3MTQ5MTEwfQ.Y-DphiHWtaletioE6SdBZ6hXuSKBslA8PifCrX5mPrk";
+	const token = cookies.get('arthemis_token');
 
 	if(!token) {
-		// Redirect to login
+		throw redirect(303, '/login');
 	}
 
-	// Mock
-	// const proponents = [
-	// 	{ id: '00000000-0000-0000-0000-000000000001', name: 'Organização Exemplo A' },
-	// 	{ id: '00000000-0000-0000-0000-000000000002', name: 'Organização Exemplo B' }
-	// ];
-
 	try {
-		// Get proponents (what are the endpoints?)
-		const response = await axios.post(`${GATEWAY_URL}/auth/register`, {
-			data: {
-				"password": "merdafudida",
-				"role": "admin",
-				"username": "gustavo",
-			}
-		});
+		const proponents = await listProponents(token);
 
 		return {
 			form: await superValidate(zod4(projectSchema)),
-			proponents: response.data
+			proponents
 		};
 	}
-	catch (err: unknown) {
-		if (axios.isAxiosError(err)) {
-			console.log('get error: ', err.message);
-		}
-
+	catch (error: unknown) {
 		return {
 			form: await superValidate(zod4(projectSchema)),
 			proponents: []
@@ -58,18 +43,87 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		// TODO: salvar no banco de dados
-		try {
-			const response = axios.post(`${GATEWAY_URL}/brain/project`)
-		} 
-		catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				console.log('post error: ', err.message);
-			}
+		const token = event.cookies.get('arthemis_token');
+		
+		if (!token) {
+			throw redirect(303, '/login');
 		}
+	
+		try {
+			const projectData = {
+                proponentId: Number(form.data.proponent_id),
+                name: form.data.name,
+                justification: form.data.justification,
+                lifetimeStart: form.data.lifetime_start,
+                lifetimeEnd: form.data.lifetime_end
+            };
+            
+            const projectId = await createProject(projectData, token);
+			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
 
-		console.log('Projeto cadastrado:', form.data);
+			const locationIdMap = new Map<string, number>();
+			
+			for (const location of form.data.locations) {
+                const locationId = await createLocation({
+					projectId: projectId,
+                    ecosystem: location.ecosystem,
+                    country: location.country,
+                    extentHa: location.extent_ha,
+                    position: location.position
+                }, token);
+                
+				if (!locationId) throw new Error(`Não foi possível recuperar o ID da localização: ${location.ecosystem}`);
+				
+				locationIdMap.set(location.id, Number(locationId));
+            }
 
-		return { form };
+			const activityIdMap = new Map<string, number>();
+
+			for (const activity of form.data.activities) {
+                const activityId = await createActivity({
+					projectId: projectId,
+                    name: activity.name,
+                    description: activity.description,
+                    justification: activity.justification
+                }, token);
+                
+				if (!activityId) throw new Error(`Não foi possível recuperar o ID da atividade: ${activity.name}`);
+				
+				activityIdMap.set(activity.id, Number(activityId));
+            }
+
+			for (const indicator of form.data.indicators) {
+                const realLocationId = locationIdMap.get(indicator.location_id);
+                const realActivityId = activityIdMap.get(indicator.activity_id);
+
+                if (!realLocationId || !realActivityId) {
+                    throw new Error("Erro: Localização ou Atividade não encontrada para o Indicador");
+                }
+
+                await createIndicator({
+                    projectId: projectId,
+                    locationId: realLocationId,
+                    activityId: realActivityId,
+                    name: indicator.name,
+                    unit: indicator.unit,
+                    valueBaseline: indicator.value_baseline,
+                    valueReference: indicator.value_reference,
+                    observationMethod: indicator.observation_method,
+                    justification: indicator.justification
+                }, token);
+            }
+
+
+			return { form, success: true, message: "Projeto cadastrado com sucesso!" };
+		} 
+		catch (error: unknown) {
+			console.log(error);
+
+			return fail(500, { 
+				form, 
+				message: error instanceof Error ? error.message : 'Erro interno.'
+			});
+		}
 	}
 };
+
