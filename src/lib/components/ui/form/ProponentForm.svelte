@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import { toast } from 'svelte-sonner';	
 	import { proponentSchema } from './ProponentFormschema.js';
 	import { cn } from '$lib/utils.js';
 	import * as Form from '$lib/components/ui/form/index.js';
@@ -19,7 +20,15 @@
 	}: ProponentFormProps = $props();
 
 	const form = superForm(data, {
-		validators: zod4Client(proponentSchema)
+		validators: zod4Client(proponentSchema),
+		onResult({ result }) {
+			if (result.type === 'success') {
+				toast.success(result.data?.message);
+			}
+			else if (result.type === 'error') {
+				toast.error('Erro desconhecido');
+			}
+		}
 	});
 
 	const { form: formData, enhance, submitting } = form;

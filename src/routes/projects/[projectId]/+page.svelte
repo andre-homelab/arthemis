@@ -228,7 +228,7 @@
         {#if selectedActivityName} 
           {selectedActivityName} 
         {:else} 
-          <p>Select an activity</p>
+          Select an activity
         {/if}
       </Select.Trigger>
       <Select.Content class="rounded-md">

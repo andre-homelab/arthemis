@@ -8,7 +8,7 @@
 <div class="page-container">
 	<header class="page-header">
 		<h1 class="page-title">Projetos</h1>
-		<p class="page-description">Cadastre os projetos vinculados às organizações proponentes.</p>
+		<p class="page-description">Cadastre os projetos vinculados às organizações.</p>
 	</header>
 
 	<ProjectForm data={data.form} proponents={data.proponents} />
@@ -21,7 +21,7 @@
 		flex-direction: column;
 		padding: 32px;
 		gap: 24px;
-		max-width: 640px;
+		width: 100%;
 	}
 
 	.page-header {

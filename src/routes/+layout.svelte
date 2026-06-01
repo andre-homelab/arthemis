@@ -3,10 +3,13 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/ui/sidebar/AppSidebar.svelte';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 
 	let sidebarOpen = $state(true);
 	let { children } = $props();
 </script>
+
+<Toaster />
 
 <Sidebar.Provider bind:open={sidebarOpen}>
 	<div class="bg-background text-foreground flex h-screen w-full overflow-hidden">
@@ -16,8 +19,8 @@
 				<Sidebar.Trigger />
 			</div>
 		{/if}
-		<div class="flex flex-1 flex-col overflow-hidden">
-			<main class="flex flex-1 flex-col overflow-auto">
+		<div class="flex flex-1 flex-col overflow-auto">
+			<main class="flex flex-1 flex-col">
 				{@render children()}
 			</main>
 		</div>

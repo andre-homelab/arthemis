@@ -2,7 +2,8 @@ import type { PageServerLoad, Actions } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { proponentSchema } from '$lib/components/ui/form/ProponentFormschema.js';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
+import { createProponent } from '$lib/server/arthemis-api.js';
 
 export const load: PageServerLoad = async () => {
 	return {
@@ -18,11 +19,22 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		// TODO: salvar no banco de dados
-		// Ex: await db.insert(proponents).values({ id: crypto.randomUUID(), ...form.data });
+		const token = event.cookies.get('arthemis_token');
 
-		console.log('Organização cadastrada:', form.data);
+		if (!token) {
+			throw redirect(303, '/login');
+		}
 
-		return { form };
+		try {
+			await createProponent(form.data, token);
+            
+            return { form, success: true, message: "Organização cadastrada com sucesso!" };
+		}
+		catch(error: unknown) {
+			return fail(500, { 
+				form, 
+				message: error instanceof Error ? error : 'Erro interno.'
+			});
+		}
 	}
 };

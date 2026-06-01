@@ -7,8 +7,8 @@
 - Criada página de cadastro de projetos - https://github.com/andre-homelab/arthemis/issues/17 - Tudo Feito
 - Criada conexão com o banco de dados e suas APIs para o cadastro de usuários - https://github.com/andre-homelab/arthemis/issues/35 - Tudo Feito
 - Criada conexão com o banco de dados e suas APIs para o login do usuário - https://github.com/andre-homelab/arthemis/issues/34 - Tudo Feito
-
-
+- Corrigido comportanto do scroll em páginas com conteúdo que ultrapassa a altura da tela - https://github.com/andre-homelab/arthemis/issues/30
+- Adicianos os campos Localizações, Atividades e Indicadores na página de cadastro de projeto - https://github.com/andre-homelab/arthemis/issues/31 - Tudo feito
 
 ## UPDATE
 

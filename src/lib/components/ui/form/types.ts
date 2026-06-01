@@ -1,8 +1,20 @@
 import type { SuperValidated, Infer } from 'sveltekit-superforms';
+import type { Snippet } from 'svelte';
 import type { ProponentSchema } from './ProponentFormschema.js';
 import type { ProjectSchema } from './ProjectFormSchema.js';
 import type { UserSchema } from './UserFormSchema.js';
 import type { UserLoginSchema } from './UserLoginSchema.js';
+
+// Props para o wrapper utilizado no formulário dos Projetos
+export interface FormFieldWrapperProps<T extends { id: string }> {
+        title: string;
+        items: T[]; 
+        itemTitlePrefix?: string;
+        addLabel?: string;
+        onAdd: () => void;
+        onRemove: (index: number) => void;
+        children: Snippet<[number]>;
+}
 
 // Props para os componentes do formulário das Organizações
 export interface ProponentFormProps {

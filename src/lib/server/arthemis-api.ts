@@ -55,6 +55,54 @@ export type ProponentOption = {
 	name: string;
 };
 
+export type CreationResponse = {
+	ID?: number;
+	id?: number;
+	/** Permite que a API retorne outros campos além dos acima */
+	[key: string]: unknown;
+}
+
+export type CreateProponentInput = {
+	name: string;
+	email: string;
+};
+
+
+export type CreateProjectInput = {
+	proponentId: number;
+	name: string;
+	justification: string;
+	lifetimeStart: Date;
+	lifetimeEnd: Date;  
+};
+
+export type CreateLocationInput = {
+	projectId: number; 
+	ecosystem: string;
+	country: string;
+	extentHa: number;   
+	position: string;
+};
+
+export type CreateActivityInput = {
+	projectId: number; 
+	name: string;
+	description: string;
+	justification: string;
+};
+
+export type CreateIndicatorInput = {
+	projectId: number;         
+	locationId: number;    
+	activityId: number;     
+	name: string;
+	unit: string;
+	valueBaseline: number; 
+	valueReference: number;   
+	observationMethod: string;
+	justification: string;
+};
+
 /**
  * Auxiliar para analisar erros retornados das APIs.
  * Tenta decodificar o JSON buscando por campos comuns de erro (`error` ou `message`).
@@ -166,6 +214,23 @@ export async function createBrainUser(input: {
 	return response.json();
 }
 
+export async function createProponent(input: CreateProponentInput, token: string): Promise<unknown> {
+	const response = await fetch(`${BRAIN_BASE_URL}/proponent/create`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json', 
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(input)
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao cadastrar organização.'));
+	}
+
+	return response.json();
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -190,4 +255,102 @@ export async function listProponents(token?: string): Promise<ProponentOption[]>
 			name: proponent.name ?? proponent.Name ?? ''
 		}))
 		.filter((proponent) => proponent.id && proponent.name);
+}
+
+
+export async function createProject(input: CreateProjectInput, token: string): Promise<number | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/project/create`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json', 
+			Authorization: `Bearer ${token}` 
+		},
+		body: JSON.stringify({
+			ProponentID: input.proponentId,
+			Name: input.name,
+			Justification: input.justification,
+			LifetimeStart: input.lifetimeStart,
+			LifetimeEnd: input.lifetimeEnd
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar projeto.'));
+	}
+
+	const projectId = await response.json(); 	
+	console.log(projectId);
+	return projectId
+}
+
+export async function createLocation(input: CreateLocationInput, token: string): Promise<number | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json', 
+			Authorization: `Bearer ${token}`
+		 },
+		body: JSON.stringify({
+			ProjectID: input.projectId,
+			Ecosystem: input.ecosystem,
+			Country: input.country,
+			Extent: input.extentHa,
+			Position: JSON.parse(input.position)
+		})
+	});
+	
+	if (!response.ok) { 
+		throw new Error(await parseError(response, 'Erro ao criar localização.'));
+	}
+
+	const locationId = await response.json(); 	
+	return locationId
+}
+
+export async function createActivity(input: CreateActivityInput, token: string): Promise<number | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/activity/create`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json',
+			 Authorization: `Bearer ${token}` 
+			},
+		body: JSON.stringify({
+			ProjectID: input.projectId,
+			Name: input.name,
+			Description: input.description,
+			Justification: input.justification
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar atividade.'));
+	}
+	
+	const activityId = await response.json(); 	
+	return activityId;
+}
+
+export async function createIndicator(input: CreateIndicatorInput, token: string): Promise<number | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/indicator/create`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+		body: JSON.stringify({
+			ProjectID: input.projectId,                 
+			LocationID: input.locationId,              
+			ActivityID: input.activityId,             
+			Name: input.name,
+			Unit: input.unit,
+			ValueBaseline: input.valueBaseline,        
+			ValueReference: input.valueReference,    
+			ObservationMethod: input.observationMethod,
+			Justification: input.justification
+		})
+	});
+	
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar indicador.'));
+	}
+
+	const indicatorId = await response.json(); 	
+	return indicatorId;
 }

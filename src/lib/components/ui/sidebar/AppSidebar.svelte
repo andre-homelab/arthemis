@@ -51,7 +51,7 @@
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton class="sidebar-menu-button">
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon />
@@ -69,7 +69,8 @@
 
 <style>
 	.sidebar-header {
-		padding-bottom: 0.25rem;
+		padding-bottom: 0.5rem;
+		padding-top: 1rem;
 	}
 
 	.sidebar-header-row {
@@ -82,11 +83,31 @@
 
 	:global(.sidebar-group-label) {
 		margin-right: auto;
-		padding-left: 0.25rem;
+		padding-left: 0.5rem;
+		font-family: var(--font-serif);
+		font-size: 1.75rem !important;
+		font-weight: 700 !important;
+		color: var(--color-sage-green-950) !important;
+		letter-spacing: -0.03em;
+		height: auto !important;
+		text-transform: none !important;
+		padding-bottom: 0.3rem;
 	}
 
 	:global(.sidebar-trigger) {
 		margin-left: auto;
 		flex-shrink: 0;
+	}
+
+	:global(.sidebar-menu-button) {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
+		font-family: var(--font-sans);
+		font-size: 1.0rem !important;
+		font-weight: 500;
+		color: var(--sidebar-foreground);
 	}
 </style>
