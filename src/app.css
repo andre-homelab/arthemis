@@ -51,11 +51,29 @@
 	--chart-2: var(--color-sage-green-300);
 	--color-chrome: var(--color-sage-green-700);
 	--color-safari: var(--color-sage-green-300);
+
+	--success: oklch(62.77% 0.194 149.21);
+	--success-foreground: oklch(98.81% 0.007 149.21);
+	--warning: oklch(84.15% 0.149 85.16);
+	--warning-foreground: oklch(28.43% 0.063 85.16);
+	--error: oklch(62.74% 0.223 28.94);
+	--error-foreground: oklch(98.51% 0.007 28.94);
+	--info: oklch(70.71% 0.12 230);
+	--info-foreground: oklch(98.5% 0.01 230);
 }
 
 @theme inline {
 	--font-sans: 'Instrument Sans Variable', sans-serif;
 	--font-serif: 'Lora Variable', serif;
+
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-error: var(--error);
+	--color-error-foreground: var(--error-foreground);
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
 
 	--color-sage-green-50: var(--color-sage-green-50);
 	--color-sage-green-100: var(--color-sage-green-100);

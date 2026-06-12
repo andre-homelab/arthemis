@@ -40,44 +40,52 @@
   /* :global() permite estilizar elementos de componentes externos como o shadcn */
   :global(.metric-card) {
     min-width: 180px;
-    border-radius: 12px !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border) !important;
+    background-color: var(--card) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  :global(.metric-card:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    border-color: var(--primary) / 20% !important;
   }
 
   :global(.metric-content) {
-    padding: 16px 20px !important;
+    padding: 1.25rem !important;
   }
 
   .metric-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
   }
 
   .metric-label {
-    font-size: 14px;
-    color: #444;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
     font-weight: 500;
   }
 
-  .trend-arrow.up  { color: #16a34a; }
-  .trend-arrow.down { color: #dc2626; }
+  .trend-arrow.up  { color: var(--success); }
+  .trend-arrow.down { color: var(--error); }
 
   .metric-value {
-    font-size: 32px;
+    font-size: 2rem;
     font-weight: 700;
-    color: #111;
-    margin-bottom: 4px;
-    letter-spacing: -1px;
+    color: var(--foreground);
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
   .metric-change {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
   }
 
-  .metric-change.positive  { color: #22c55e; }
-  .metric-change.negative  { color: #ef4444; }
+  .metric-change.positive  { color: var(--success); }
+  .metric-change.negative  { color: var(--error); }
 </style>

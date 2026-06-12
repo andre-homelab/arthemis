@@ -147,9 +147,9 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		font-size: 14px;
+		font-size: 0.875rem;
 		font-weight: 500;
-		color: #444;
+		color: var(--muted-foreground);
 	}
 
 	.legend-dot {
