@@ -67,6 +67,11 @@ export type CreateProponentInput = {
 	email: string;
 };
 
+export type CreateProjectProponentInput = {
+	projectId: number;
+	proponentId: number;
+	role: string;
+};
 
 export type CreateProjectInput = {
 	proponentId: number;
@@ -231,6 +236,28 @@ export async function createProponent(input: CreateProponentInput, token: string
 	return response.json();
 }
 
+export async function createProjectProponent(input: CreateProjectProponentInput, token: string): Promise<number | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/project/${input.projectId}/add_proponent`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}` 
+		},
+		body: JSON.stringify({
+			ProjectID: input.projectId,
+			ProponentID: input.proponentId,
+			Role: input.role
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar organização do projeto.'));
+	}
+	
+	const projectProponentID = await response.json();
+	return projectProponentID;
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -279,7 +306,6 @@ export async function createProject(input: CreateProjectInput, token: string): P
 	}
 
 	const projectId = await response.json(); 	
-	console.log(projectId);
 	return projectId
 }
 

@@ -39,11 +39,18 @@ export interface ProponentOption {
 	name: string;
 }
 
+export interface SDGOption {
+	id: string;
+	name: string;
+}
+
 export interface ProjectFormProps {
 	// Dados do formulário vindos do load() via superValidate
 	data: SuperValidated<Infer<ProjectSchema>>;
 	// Lista de proponentes para o campo de seleção
 	proponents: ProponentOption[];
+	// Lista de ODS para o campo de seleção
+	sdgs: SDGOption[];
 	// Título exibido no card do formulário
 	title?: string;
 	// Subtítulo/descrição exibida abaixo do título

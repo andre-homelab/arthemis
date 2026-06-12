@@ -21,6 +21,7 @@
 	let {
 		data,
 		proponents,
+		sdgs,
 		title = 'Novo Projeto',
 		description = 'Preencha os dados do projeto.',
 		submitLabel = 'Cadastrar Projeto',
@@ -42,9 +43,13 @@
 
 	const { form: formData, enhance, submitting } = form;
 
-	const triggerContent = $derived(
-		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione sua Organização'
+	const proponenttriggerContent = $derived(
+		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione uma Organização'
 	);
+
+	// const sdgtriggerContent = $derived(
+	// 	sdgs.find((s) => String(s.id) === String($formData.sdg_id))?.name ?? 'Selecione um SDG'
+	// );
 
 	/*
 	 Estado local do calendário.
@@ -72,13 +77,28 @@
 		});
 	});
 
+	if (!$formData.projectProponents) $formData.projectProponents = [];
+	// if (!$formData.projectSDGs) $formData.projectSDGs = [];
 	if (!$formData.locations) $formData.locations = [];
    	if (!$formData.activities) $formData.activities = [];
     if (!$formData.indicators) $formData.indicators = [];
 
+	let proponentCounter = 0;
+	// let sdgCounter = 0;
 	let locationCounter = 0;
 	let activityCounter = 0;
 	let indicatorCounter = 0;
+
+	function addProponent() {
+		proponentCounter++;
+		$formData.projectProponents = [...$formData.projectProponents, { 
+			id: `p-${proponentCounter}`, proponent_id: '', role: '' 
+		}];
+	}
+
+	function removeProponent(index: number) {
+		$formData.projectProponents = $formData.projectProponents.filter((_, i) => i !== index);
+	}
 
 	function addLocation() {
 		locationCounter++;
@@ -130,7 +150,7 @@
 					{#snippet children({ props })}
 						<Form.Label>Organizações</Form.Label>
 						<Select.Root type="single" {...props} bind:value={$formData.proponent_id}>
-							<Select.Trigger class="rounded-md max-w-xl w-full">{triggerContent}</Select.Trigger>
+							<Select.Trigger class="rounded-md max-w-xl w-full">{proponenttriggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
 								{#each proponents as p (p.id)}
 									<Select.Item value={String(p.id)}>{p.name}</Select.Item>
@@ -140,6 +160,50 @@
 					{/snippet}
 				</Form.Control>
 				<Form.Description>Organização responsável pelo projeto.</Form.Description>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<FormFieldWrapper
+				title="Outras Organizações"
+				items={$formData.projectProponents}
+				itemTitlePrefix="Organização"
+				addLabel="+ Adicionar Organização"
+				onAdd={addProponent}
+				onRemove={removeProponent}
+			>
+				{#snippet children(id)}
+					<Form.Field {form} name={`projectProponents[${id}].proponent_id`} class="field">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label class="text-xs">Organização</Form.Label>
+								<Select.Root type="single" {...props} bind:value={$formData.projectProponents[id].proponent_id}>
+									<Select.Trigger class="w-full">
+										{proponents.find(p => String(p.id) === String($formData.projectProponents[id].proponent_id))?.name || 'Selecione uma Organização'}
+									</Select.Trigger>
+									<Select.Content class="max-h60">
+										{#each proponents as p (p.id)}
+											<Select.Item value={String(p.id)}>{p.name}</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+
+					<Form.Field {form} name={`projectProponents[${id}].role`} class="field">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label class="text-xs">Função/Papel no Projeto</Form.Label>
+								<Input {...props} bind:value={$formData.projectProponents[id].role} placeholder="Ex: Financiador, Consultor" />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				{/snippet}
+			</FormFieldWrapper>
+
+			<Form.Field {form} name="projectProponents">
 				<Form.FieldErrors />
 			</Form.Field>
 

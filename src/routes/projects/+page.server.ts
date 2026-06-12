@@ -6,6 +6,7 @@ import type { Actions, PageServerLoad, } from './$types.js';
 import { 
     listProponents, 
     createProject, 
+	createProjectProponent,
     createLocation, 
     createActivity, 
     createIndicator, 
@@ -49,17 +50,24 @@ export const actions: Actions = {
 			throw redirect(303, '/login');
 		}
 	
-		try {
-			const projectData = {
+		try {            
+            const projectId = await createProject({
                 proponentId: Number(form.data.proponent_id),
                 name: form.data.name,
                 justification: form.data.justification,
                 lifetimeStart: form.data.lifetime_start,
                 lifetimeEnd: form.data.lifetime_end
-            };
-            
-            const projectId = await createProject(projectData, token);
+            }, token);
+			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
+
+			for (const projectProponent of form.data.projectProponents) {
+				await createProjectProponent({
+					projectId: projectId,
+					proponentId: Number(projectProponent.proponent_id),
+					role: projectProponent.role
+				}, token);
+			}
 
 			const locationIdMap = new Map<string, number>();
 			
