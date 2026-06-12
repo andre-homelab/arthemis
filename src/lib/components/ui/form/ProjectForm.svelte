@@ -50,9 +50,7 @@
 	 Estado local do calendário.
 	 O RangeCalendar usa objetos CalendarDate do @internationalized/date,
 	 não strings — por isso não podemos fazer bind direto no $formData.
-	 
-	 DateRange = { start: CalendarDate | undefined, end: CalendarDate | undefined }
-	 */
+	*/
 	let dateRange = $state<DateRange>({ start: undefined, end: undefined });
 
 	/*
