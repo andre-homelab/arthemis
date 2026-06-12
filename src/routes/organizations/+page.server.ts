@@ -33,7 +33,7 @@ export const actions: Actions = {
 		catch(error: unknown) {
 			return fail(500, { 
 				form, 
-				message: error instanceof Error ? error : 'Erro interno.'
+				message: error instanceof Error ? error.message : 'Erro interno.'
 			});
 		}
 	}

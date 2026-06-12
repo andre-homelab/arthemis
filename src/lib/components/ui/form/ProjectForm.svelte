@@ -76,9 +76,14 @@
    	if (!$formData.activities) $formData.activities = [];
     if (!$formData.indicators) $formData.indicators = [];
 
+	let locationCounter = 0;
+	let activityCounter = 0;
+	let indicatorCounter = 0;
+
 	function addLocation() {
+		locationCounter++;
 		$formData.locations = [...$formData.locations, { 
-			id: crypto.randomUUID(), ecosystem: '', extent_ha: 0, country: '', position: '' 
+			id: `l-${locationCounter}`, ecosystem: '', extent_ha: 0, country: '', position: '' 
 		}];
 	}
 
@@ -87,8 +92,9 @@
 	}
 
 	function addActivity() {
+		activityCounter++;
 		$formData.activities = [...$formData.activities, {
-			id: crypto.randomUUID(), name: '', description: '', justification: ''
+			id: `a-${activityCounter}`, name: '', description: '', justification: ''
        	}];
    }
 
@@ -97,8 +103,9 @@
    }
 
    function addIndicator() {
+	   indicatorCounter++;
        $formData.indicators = [...$formData.indicators, {
-           id: crypto.randomUUID(), location_id: '', activity_id: '', name: '', unit: '',
+           id: `i-${indicatorCounter}`, location_id: '', activity_id: '', name: '', unit: '',
            value_baseline: 0, value_reference: 0, observation_method: '', justification: ''
        }];
    }
@@ -345,7 +352,7 @@
 								<Form.Label class="text-xs">Localização</Form.Label>
 								<Select.Root type="single" {...props} bind:value={$formData.indicators[id].location_id}>
 									<Select.Trigger class="w-full">
-										{$formData.locations.find(l => l.id === $formData.indicators[id].location_id)?.ecosystem || 'Selecione o Local...'}
+										{$formData.locations.find(l => l.id === $formData.indicators[id].location_id)?.ecosystem || 'Selecione uma Localização'}
 									</Select.Trigger>
 									<Select.Content class="max-h-60">
 										{#each $formData.locations as loc (loc.id)}
@@ -366,7 +373,7 @@
 								<Form.Label class="text-xs">Atividade Vinculada</Form.Label>
 								<Select.Root type="single" {...props} bind:value={$formData.indicators[id].activity_id}>
 									<Select.Trigger class="w-full">
-										{$formData.activities.find(a => a.id === $formData.indicators[id].activity_id)?.name || 'Selecione a Atividade...'}
+										{$formData.activities.find(a => a.id === $formData.indicators[id].activity_id)?.name || 'Selecione uma Atividade'}
 									</Select.Trigger>
 									<Select.Content class="max-h-60">
 										{#each $formData.activities as act (act.id)}

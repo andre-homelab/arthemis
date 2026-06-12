@@ -113,7 +113,6 @@ export const actions: Actions = {
                 }, token);
             }
 
-
 			return { form, success: true, message: "Projeto cadastrado com sucesso!" };
 		} 
 		catch (error: unknown) {
