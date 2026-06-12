@@ -76,7 +76,7 @@
 <style>
 	.sidebar-header {
 		padding-bottom: 0.5rem;
-		padding-top: 1rem;
+		padding-top: 1.5rem;
 	}
 
 	.sidebar-header-row {
@@ -85,35 +85,47 @@
 		justify-content: space-between;
 		gap: 0.5rem;
 		width: 100%;
+		padding-right: 0.5rem;
 	}
 
 	:global(.sidebar-group-label) {
 		margin-right: auto;
-		padding-left: 0.5rem;
+		padding-left: 0.75rem;
 		font-family: var(--font-serif);
-		font-size: 1.75rem !important;
+		font-size: 1.5rem !important;
 		font-weight: 700 !important;
 		color: var(--color-sage-green-950) !important;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.04em;
 		height: auto !important;
 		text-transform: none !important;
-		padding-bottom: 0.3rem;
+		padding-bottom: 0.5rem;
 	}
 
 	:global(.sidebar-trigger) {
 		margin-left: auto;
 		flex-shrink: 0;
+		color: var(--color-sage-green-700);
 	}
 
 	:global(.sidebar-menu-button) {
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
+		padding: 0.6rem 0.75rem;
+		border-radius: 8px;
 		font-family: var(--font-sans);
-		font-size: 1.0rem !important;
+		font-size: 0.9375rem !important;
 		font-weight: 500;
 		color: var(--sidebar-foreground);
+		transition: all 0.2s ease;
+	}
+
+	:global(.sidebar-menu-button:hover) {
+		background-color: var(--sidebar-accent) !important;
+		color: var(--sidebar-accent-foreground) !important;
+	}
+
+	:global(.sidebar-menu-button svg) {
+		opacity: 0.8;
 	}
 </style>

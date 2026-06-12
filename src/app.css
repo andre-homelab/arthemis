@@ -128,7 +128,7 @@
 	}
 	body {
 		@apply bg-background text-foreground antialiased;
-		font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+		font-feature-settings: "ss01", "ss02", "cv01", "cv02", "tnum";
 	}
 	html {
 		@apply font-sans;
@@ -141,13 +141,13 @@
 		line-height: 1.2;
 	}
 
-	h1 { @apply text-4xl md:text-5xl; }
-	h2 { @apply text-3xl md:text-4xl; }
-	h3 { @apply text-2xl md:text-3xl; }
+	h1 { @apply text-4xl md:text-5xl lg:text-6xl; letter-spacing: -0.04em; }
+	h2 { @apply text-3xl md:text-4xl; letter-spacing: -0.03em; }
+	h3 { @apply text-2xl md:text-3xl; letter-spacing: -0.02em; }
 	h4 { @apply text-xl md:text-2xl; }
 	
 	p {
-		@apply leading-relaxed mb-4 text-sage-green-900/80;
+		@apply leading-relaxed mb-4 text-sage-green-900/90;
 	}
 
 	small {
@@ -159,5 +159,9 @@
 	}
 	.maplibregl-popup-tip {
 		@apply hidden!;
+	}
+
+	.tabular-nums {
+		font-variant-numeric: tabular-nums;
 	}
 }

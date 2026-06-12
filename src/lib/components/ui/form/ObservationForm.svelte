@@ -165,24 +165,27 @@
 
 <style>
 	:global(.form-card) {
-		border-radius: 12px !important;
+		border-radius: var(--radius-lg) !important;
+		border: 1px solid var(--border) !important;
 	}
 
 	.form-body {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 1.5rem;
 	}
 
 	:global(.form-footer) {
 		padding-left: 0 !important;
 		padding-right: 0 !important;
 		padding-bottom: 0 !important;
+		margin-top: 0.5rem;
 	}
 
 	.date-summary {
 		color: var(--muted-foreground);
 		font-size: 0.875rem;
-		margin: 8px 0 0;
+		margin: 0.5rem 0 0;
+		font-variant-numeric: tabular-nums;
 	}
 </style>

@@ -446,19 +446,20 @@
 
 <style>
 	:global(.form-card) {
-		border-radius: 12px !important;
+		border-radius: var(--radius-lg) !important;
+		border: 1px solid var(--border) !important;
 	}
 
 	.form-body {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 1.5rem;
 	}
 
 	.dates-section {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 0.5rem;
 	}
 
 	:global(.calendar) {
@@ -469,12 +470,14 @@
 		font-size: 0.875rem;
 		color: var(--muted-foreground);
 		margin: 0;
+		font-variant-numeric: tabular-nums;
 	}
 
 	:global(.form-footer) {
 		padding-left: 0 !important;
 		padding-right: 0 !important;
 		padding-bottom: 0 !important;
+		margin-top: 1rem;
 	}
 
 	:global(.field) {
