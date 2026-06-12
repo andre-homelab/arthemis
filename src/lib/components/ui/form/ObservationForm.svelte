@@ -118,19 +118,24 @@
 			</Form.Field>
 
 			<Form.Field {form} name="date">
-				<Form.Label>Data</Form.Label>
-				<Calendar
-					type="single"
-					bind:value={selectedDate}
-					class="rounded-md border shadow-sm"
-					captionLayout="dropdown"
-					locale="pt-BR"
-				/>
-				{#if selectedDate}
-					<p class="date-summary">
-						{selectedDate.toDate(getLocalTimeZone()).toLocaleDateString('pt-BR')}
-					</p>
-				{/if}
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Data</Form.Label>
+						<Calendar
+							type="single"
+							bind:value={selectedDate}
+							class="rounded-md border shadow-sm"
+							captionLayout="dropdown"
+							locale="pt-BR"
+							maxValue={today(getLocalTimeZone())}
+						/>
+						{#if selectedDate}
+							<p class="date-summary">
+								{selectedDate.toDate(getLocalTimeZone()).toLocaleDateString('pt-BR')}
+							</p>
+						{/if}
+					{/snippet}
+				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
 
