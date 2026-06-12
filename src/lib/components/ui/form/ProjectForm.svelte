@@ -436,8 +436,8 @@
 			</Form.Field>
 		
 			<Card.Footer class="form-footer">
-				<Button type="submit" disabled={$submitting}>
-					{$submitting ? 'Salvando...' : submitLabel}
+				<Button type="submit" loading={$submitting}>
+					{submitLabel}
 				</Button>
 			</Card.Footer>
 		</form>
