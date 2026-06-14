@@ -173,8 +173,8 @@
 	}
 
 	:global(.action-btn) {
-		background-color: #e5e7eb !important;
-		color: #111 !important;
+		background-color: var(--color-secondary) !important;
+		color: var(--foreground) !important;
 		font-weight: 500 !important;
 		border-radius: 6px !important;
 		border: none !important;
