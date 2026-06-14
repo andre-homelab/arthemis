@@ -50,7 +50,7 @@ export interface ProjectFormProps {
 	// Lista de proponentes para o campo de seleção
 	proponents: ProponentOption[];
 	// Lista de ODS para o campo de seleção
-	sdgs: SDGOption[];
+	// sdgs: SDGOption[];
 	// Título exibido no card do formulário
 	title?: string;
 	// Subtítulo/descrição exibida abaixo do título

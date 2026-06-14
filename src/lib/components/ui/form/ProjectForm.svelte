@@ -21,7 +21,7 @@
 	let {
 		data,
 		proponents,
-		sdgs,
+		// sdgs,
 		title = 'Novo Projeto',
 		description = 'Preencha os dados do projeto.',
 		submitLabel = 'Cadastrar Projeto',

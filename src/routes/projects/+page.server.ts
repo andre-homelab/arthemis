@@ -61,65 +61,69 @@ export const actions: Actions = {
 			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
 
-			for (const projectProponent of form.data.projectProponents) {
-				await createProjectProponent({
+			if (form.data.projectProponents.length > 0) {
+				const projectProponents = form.data.projectProponents.map(p => ({
 					projectId: projectId,
-					proponentId: Number(projectProponent.proponent_id),
-					role: projectProponent.role
-				}, token);
+					proponentId: Number(p.proponent_id),
+					role: p.role
+				}));
+
+				await createProjectProponent(projectProponents, token);
 			}
 
-			const locationIdMap = new Map<string, number>();
+			const locations = form.data.locations.map(l => ({
+				projectId: projectId,
+				ecosystem: l.ecosystem,
+				country: l.country,
+				extentHa: l.extent_ha,
+				position: l.position
+			}));
 			
-			for (const location of form.data.locations) {
-                const locationId = await createLocation({
+			const locationIdMap = new Map<string, number>();
+			const locationIds = await createLocation(locations, token);
+
+			if (!locationIds) throw new Error("Erro ao cadastrar Localizações.");
+
+			form.data.locations.forEach((l, i) => {
+				locationIdMap.set(l.id, locationIds[i]);
+			})
+
+			const activities = form.data.activities.map(a => ({
 					projectId: projectId,
-                    ecosystem: location.ecosystem,
-                    country: location.country,
-                    extentHa: location.extent_ha,
-                    position: location.position
-                }, token);
-                
-				if (!locationId) throw new Error(`Não foi possível recuperar o ID da localização: ${location.ecosystem}`);
-				
-				locationIdMap.set(location.id, Number(locationId));
-            }
+                    name: a.name,
+                    description: a.description,
+                    justification: a.justification
+			}));
 
 			const activityIdMap = new Map<string, number>();
-
-			for (const activity of form.data.activities) {
-                const activityId = await createActivity({
-					projectId: projectId,
-                    name: activity.name,
-                    description: activity.description,
-                    justification: activity.justification
-                }, token);
+			const activityIds = await createActivity(activities, token);
                 
-				if (!activityId) throw new Error(`Não foi possível recuperar o ID da atividade: ${activity.name}`);
-				
-				activityIdMap.set(activity.id, Number(activityId));
-            }
+			if (!activityIds) throw new Error("Erro ao cadastrar Atividades.");
+			
+			form.data.activities.forEach((a, i) => {
+				activityIdMap.set(a.id, activityIds[i]);
+			})
 
-			for (const indicator of form.data.indicators) {
-                const realLocationId = locationIdMap.get(indicator.location_id);
-                const realActivityId = activityIdMap.get(indicator.activity_id);
+			const indicators = form.data.indicators.map(i => {
+				const locationId = locationIdMap.get(i.location_id);
+				const activityId = activityIdMap.get(i.activity_id);
 
-                if (!realLocationId || !realActivityId) {
-                    throw new Error("Erro: Localização ou Atividade não encontrada para o Indicador");
-                }
+				if (!locationId || !activityId) throw new Error("Erro ao cadastrar Indicadores.")
 
-                await createIndicator({
-                    projectId: projectId,
-                    locationId: realLocationId,
-                    activityId: realActivityId,
-                    name: indicator.name,
-                    unit: indicator.unit,
-                    valueBaseline: indicator.value_baseline,
-                    valueReference: indicator.value_reference,
-                    observationMethod: indicator.observation_method,
-                    justification: indicator.justification
-                }, token);
-            }
+				return {
+					projectId: projectId,
+					locationId: locationId,
+					activityId: activityId,
+					name: i.name,
+					unit: i.unit,
+					valueBaseline: i.value_baseline,
+					valueReference: i.value_reference,
+					observationMethod: i.observation_method,
+					justification: i.justification
+				};
+			});
+
+            await createIndicator(indicators, token);
 
 			return { form, success: true, message: "Projeto cadastrado com sucesso!" };
 		} 
