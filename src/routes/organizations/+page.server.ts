@@ -13,28 +13,22 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod4(proponentSchema));
+		const token = event.cookies.get('arthemis_token');
+		if (!token) {
+			redirect(303, '/login');
+		}
 
+		const form = await superValidate(zod4(proponentSchema));
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
-		const token = event.cookies.get('arthemis_token');
-
-		if (!token) {
-			throw redirect(303, '/login');
-		}
-
 		try {
 			await createProponent(form.data, token);
-            
-            return { form, success: true, message: "Organização cadastrada com sucesso!" };
+		} catch(error: unknown) {
+			return fail(500, { form });
 		}
-		catch(error: unknown) {
-			return fail(500, { 
-				form, 
-				message: error instanceof Error ? error.message : 'Erro interno.'
-			});
-		}
+
+		return { form };
 	}
 };

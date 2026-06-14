@@ -15,9 +15,8 @@ import {
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('arthemis_token');
-
 	if(!token) {
-		throw redirect(303, '/login');
+		redirect(303, '/login');
 	}
 
 	try {
@@ -27,8 +26,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			form: await superValidate(zod4(projectSchema)),
 			proponents
 		};
-	}
-	catch (error: unknown) {
+	} catch (error: unknown) {
 		return {
 			form: await superValidate(zod4(projectSchema)),
 			proponents: []
@@ -38,16 +36,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod4(projectSchema));
-
-		if (!form.valid) {
-			return fail(400, { form });
+		const token = event.cookies.get('arthemis_token');
+		if (!token) {
+			redirect(303, '/login');
 		}
 
-		const token = event.cookies.get('arthemis_token');
-		
-		if (!token) {
-			throw redirect(303, '/login');
+		const form = await superValidate(event, zod4(projectSchema));
+		if (!form.valid) {
+			return fail(400, { form });
 		}
 	
 		try {            
@@ -124,17 +120,11 @@ export const actions: Actions = {
 			});
 
             await createIndicator(indicators, token);
-
-			return { form, success: true, message: "Projeto cadastrado com sucesso!" };
-		} 
-		catch (error: unknown) {
-			console.log(error);
-
-			return fail(500, { 
-				form, 
-				message: error instanceof Error ? error.message : 'Erro interno.'
-			});
+		} catch (error: unknown) {
+			return fail(500, { form });
 		}
+
+		return { form };
 	}
 };
 

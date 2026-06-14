@@ -32,11 +32,14 @@
 		validators: zod4Client(projectSchema),
 		dataType: 'json',
 		onResult({ result }) {
-			if (result.type === 'success') {
-				toast.success(result.data?.message);
+			if (result.type === 'success' ) {
+				toast.success('Projeto cadastrado com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
 			}
 			else if (result.type === 'error') {
-				toast.error('Erro desconhecido');
+				toast.error('Erro interno');
 			}
 		}
 	});

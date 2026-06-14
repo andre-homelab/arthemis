@@ -8,6 +8,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { UserLoginProps } from './types.js';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		data,
@@ -18,7 +19,15 @@
 	}: UserLoginProps = $props();
 
 	const form = superForm(data, {
-		validators: zod4Client(userLoginSchema)
+		validators: zod4Client(userLoginSchema),
+		onResult({ result }) {
+			if (result.type == 'failure') {
+				toast.error('Usuário/Senha incorretos');
+			}
+			else if (result.type === 'error') {
+				toast.error('Erro interno');
+			}
+		}
 	});
 
 	const { form: formData, enhance, submitting } = form;

@@ -286,7 +286,6 @@ export async function listProponents(token?: string): Promise<ProponentOption[]>
 		.filter((proponent) => proponent.id && proponent.name);
 }
 
-
 export async function createProject(input: CreateProjectInput, token: string): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/project/create`, {
 		method: 'POST',

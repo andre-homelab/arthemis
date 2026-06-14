@@ -9,6 +9,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { UserFormProps } from './types.js';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		data,
@@ -20,7 +21,18 @@
 	}: UserFormProps = $props();
 
 	const form = superForm(data, {
-		validators: zod4Client(userSchema)
+		validators: zod4Client(userSchema),
+		onResult({ result }) {
+			if (result.type === 'success') {
+				toast.success('Usuário cadastrado com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
+			}
+			else if (result.type === 'error') {
+				toast.error('Erro interno');
+			}
+		}
 	});
 
 	const { form: formData, enhance, submitting } = form;
