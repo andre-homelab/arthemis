@@ -5,46 +5,41 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, } from './$types.js';
 import { 
     listProponents, 
+	listSdgs, 
     createProject, 
 	createProjectProponent,
     createLocation, 
     createActivity, 
-    createIndicator, 
+    createIndicator,
 } from '$lib/server/arthemis-api.js';
 
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('arthemis_token');
-	if(!token) {
-		redirect(303, '/login');
-	}
+export const load: PageServerLoad = async (event) => {
+	const token = event.locals.token;
 
 	try {
 		const proponents = await listProponents(token);
+		const sdgs = await listSdgs(token);
 
 		return {
 			form: await superValidate(zod4(projectSchema)),
-			proponents
+			proponents,
+			sdgs
 		};
 	} catch (error: unknown) {
 		return {
 			form: await superValidate(zod4(projectSchema)),
-			proponents: []
+			proponents: [],
+			sdgs: []
 		};
 	}
 };
 
 export const actions: Actions = {
 	default: async (event) => {
-		const token = event.cookies.get('arthemis_token');
-		if (!token) {
-			redirect(303, '/login');
-		}
+		const token = event.locals.token;
 
 		const form = await superValidate(event, zod4(projectSchema));
-		if (!form.valid) {
-			return fail(400, { form });
-		}
 	
 		try {            
             const projectId = await createProject({
@@ -57,8 +52,8 @@ export const actions: Actions = {
 			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
 
-			if (form.data.projectProponents.length > 0) {
-				const projectProponents = form.data.projectProponents.map(p => ({
+			if (form.data.project_proponents.length > 0) {
+				const projectProponents = form.data.project_proponents.map(p => ({
 					projectId: projectId,
 					proponentId: Number(p.proponent_id),
 					role: p.role
@@ -66,6 +61,8 @@ export const actions: Actions = {
 
 				await createProjectProponent(projectProponents, token);
 			}
+
+			const projectSdgs = form.data.project_sdgs;
 
 			const locations = form.data.locations.map(l => ({
 				projectId: projectId,

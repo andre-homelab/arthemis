@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from './$types.js';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { proponentSchema } from '$lib/components/ui/form/ProponentFormschema.js';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { createProponent } from '$lib/server/arthemis-api.js';
 
 export const load: PageServerLoad = async () => {
@@ -13,12 +13,9 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const token = event.cookies.get('arthemis_token');
-		if (!token) {
-			redirect(303, '/login');
-		}
+		const token = event.locals.token;
 
-		const form = await superValidate(zod4(proponentSchema));
+		const form = await superValidate(event, zod4(proponentSchema));
 		if (!form.valid) {
 			return fail(400, { form });
 		}

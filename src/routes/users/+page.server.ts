@@ -18,11 +18,8 @@ import {
  * @param event Contexto do servidor SvelteKit, incluindo cookies para verificação de token.
  * @returns Um objeto com a instância vazia do formulário de usuário e a lista de proponentes cadastrados.
  */
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('arthemis_token');
-	if(!token) {
-		redirect(303, '/login');
-	}
+export const load: PageServerLoad = async ({ locals }) => {
+	const token = locals.token;
 	
 	try {
 		// Carrega proponentes ativos a partir da API do Brain, enviando o token JWT
