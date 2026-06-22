@@ -45,6 +45,13 @@ type ProponentResponse = {
 	name?: string;
 };
 
+type SdgResponse = {
+	ID: number;
+	Name: string;
+	Number: number;
+	IconURL: string;
+};
+
 /**
  * Tipo exportado e formatado para ser consumido nos componentes de seleção (Select) do frontend.
  */
@@ -53,6 +60,14 @@ export type ProponentOption = {
 	id: string;
 	/** Nome de exibição da organização proponente. */
 	name: string;
+};
+
+// !iconUrl para dispor os ícones conforme as ODS forem selecionadas; talvez um botão X em hover no ícone para remover uma ODS
+export type SdgOption = {
+	id: string;
+	name: string;
+	number: number;
+	iconUrl: string;
 };
 
 export type CreationResponse = {
@@ -72,6 +87,11 @@ export type CreateProjectProponentInput = {
 	proponentId: number;
 	role: string;
 };
+
+export type CreateProjectSdgInput = {
+	projectId: number;
+	sdgId: number;
+}
 
 export type CreateProjectInput = {
 	proponentId: number;
@@ -260,6 +280,29 @@ export async function createProjectProponent(input: CreateProjectProponentInput[
 	return projectProponentIds;
 }
 
+export async function createProjectSdg(input: CreateProjectSdgInput[], token: string): Promise<number[] | null> {
+	const projectId = input[0].projectId;
+
+	const response = await fetch(`${BRAIN_BASE_URL}/project/${projectId}/add_sdg`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(input.map(s => ({
+			ProjectID: s.projectId,
+			SdgID: s.sdgId
+		})))
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar organização do projeto.'));
+	}
+	
+	const projectSdgIds = await response.json();
+	return projectSdgIds;
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -284,6 +327,27 @@ export async function listProponents(token?: string): Promise<ProponentOption[]>
 			name: proponent.name ?? proponent.Name ?? ''
 		}))
 		.filter((proponent) => proponent.id && proponent.name);
+}
+
+export async function listSdgs(token?: string): Promise<SdgOption[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/sdg/`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : undefined
+	});
+
+	if (!response.ok) {
+		return [];
+	}
+
+	const sdgs = (await response.json()) as SdgResponse[];
+
+	return sdgs
+		.map((sdg) => ({
+			id: String(sdg.ID),
+			name: sdg.Name,
+			number: sdg.Number,
+			iconUrl: sdg.IconURL
+		}))
+		.filter((sdg) => sdg.id && sdg.name && sdg.number && sdg.iconUrl);
 }
 
 export async function createProject(input: CreateProjectInput, token: string): Promise<number | null> {

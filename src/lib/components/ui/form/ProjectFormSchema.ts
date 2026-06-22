@@ -33,11 +33,6 @@ export const projectProponentSchema = z.object({
    role: z.string().min(5, 'Função é obrigatório')
 });
 
-// export const projectSDGSchema = z.object({
-//    id: z.string(),
-//    sdg_ids: z.array(z.string()).min(1, 'Vincule a um ODS'),
-// });
-
 export const projectSchema = z.object({
 	// FK para a tabela proponent — uuid do proponente selecionado
 	proponent_id: z.string().min(1, 'Selecione uma organização válida'),
@@ -53,8 +48,8 @@ export const projectSchema = z.object({
 	locations: z.array(locationSchema).default([]),
 	activities: z.array(activitySchema).default([]),
    	indicators: z.array(indicatorSchema).default([]),
-	projectProponents: z.array(projectProponentSchema).default([]),
-	// projectSGDs: z.array(projectSDGSchema).default([])
+	project_proponents: z.array(projectProponentSchema).default([]),
+	project_sdgs: z.array(z.string()).default([])
 })
 	.refine((data) => data.lifetime_start <= data.lifetime_end, {
 			message: 'A data de término não pode ser anterior à data de início',
@@ -76,10 +71,10 @@ export const projectSchema = z.object({
 		path: ['indicators']
 	})
 
-	// .refine((data) => data.projectSGDs.length >= 1, {
-	// 	message: 'O projeto deve conter pelo menos um ODS.',
-	// 	path: ['sdgs']
-	// })
+	.refine((data) => data.project_sdgs.length >= 1, {
+		message: 'O projeto deve conter pelo menos um ODS.',
+		path: ['project_sdgs']
+	})
 
 	.refine(
 		(data) => {

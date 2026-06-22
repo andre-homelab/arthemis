@@ -1,7 +1,7 @@
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { projectSchema } from '$lib/components/ui/form/ProjectFormSchema.js';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, } from './$types.js';
 import { 
     listProponents, 
@@ -11,6 +11,7 @@ import {
     createLocation, 
     createActivity, 
     createIndicator,
+	createProjectSdg,
 } from '$lib/server/arthemis-api.js';
 
 
@@ -38,22 +39,22 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	default: async (event) => {
 		const token = event.locals.token;
-
 		const form = await superValidate(event, zod4(projectSchema));
+		const data = form.data;
 	
 		try {            
             const projectId = await createProject({
-                proponentId: Number(form.data.proponent_id),
-                name: form.data.name,
-                justification: form.data.justification,
-                lifetimeStart: form.data.lifetime_start,
-                lifetimeEnd: form.data.lifetime_end
+                proponentId: Number(data.proponent_id),
+                name: data.name,
+                justification: data.justification,
+                lifetimeStart: data.lifetime_start,
+                lifetimeEnd: data.lifetime_end
             }, token);
 			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
 
-			if (form.data.project_proponents.length > 0) {
-				const projectProponents = form.data.project_proponents.map(p => ({
+			if (data.project_proponents.length > 0) {
+				const projectProponents = data.project_proponents.map(p => ({
 					projectId: projectId,
 					proponentId: Number(p.proponent_id),
 					role: p.role
@@ -62,9 +63,14 @@ export const actions: Actions = {
 				await createProjectProponent(projectProponents, token);
 			}
 
-			const projectSdgs = form.data.project_sdgs;
+			const projectSdgs = data.project_sdgs.map(s => ({
+				projectId: projectId,
+				sdgId: Number(s),
+			}));
 
-			const locations = form.data.locations.map(l => ({
+			await createProjectSdg(projectSdgs, token);
+
+			const locations = data.locations.map(l => ({
 				projectId: projectId,
 				ecosystem: l.ecosystem,
 				country: l.country,
@@ -77,11 +83,11 @@ export const actions: Actions = {
 
 			if (!locationIds) throw new Error("Erro ao cadastrar Localizações.");
 
-			form.data.locations.forEach((l, i) => {
+			data.locations.forEach((l, i) => {
 				locationIdMap.set(l.id, locationIds[i]);
 			})
 
-			const activities = form.data.activities.map(a => ({
+			const activities = data.activities.map(a => ({
 					projectId: projectId,
                     name: a.name,
                     description: a.description,
@@ -93,11 +99,11 @@ export const actions: Actions = {
                 
 			if (!activityIds) throw new Error("Erro ao cadastrar Atividades.");
 			
-			form.data.activities.forEach((a, i) => {
+			data.activities.forEach((a, i) => {
 				activityIdMap.set(a.id, activityIds[i]);
 			})
 
-			const indicators = form.data.indicators.map(i => {
+			const indicators = data.indicators.map(i => {
 				const locationId = locationIdMap.get(i.location_id);
 				const activityId = activityIdMap.get(i.activity_id);
 

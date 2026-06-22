@@ -17,11 +17,12 @@
 	import { untrack } from 'svelte';
 	import FormFieldWrapper from './FormFieldWrapper.svelte';
 	import { toast } from 'svelte-sonner';
+	import X from '@lucide/svelte/icons/x';
 
 	let {
 		data,
 		proponents,
-		// sdgs,
+		sdgs,
 		title = 'Novo Projeto',
 		description = 'Preencha os dados do projeto.',
 		submitLabel = 'Cadastrar Projeto',
@@ -46,13 +47,9 @@
 
 	const { form: formData, enhance, submitting } = form;
 
-	const proponenttriggerContent = $derived(
+	const proponentTriggerContent = $derived(
 		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione uma Organização'
 	);
-
-	// const sdgtriggerContent = $derived(
-	// 	sdgs.find((s) => String(s.id) === String($formData.sdg_id))?.name ?? 'Selecione um SDG'
-	// );
 
 	/*
 	 Estado local do calendário.
@@ -80,27 +77,26 @@
 		});
 	});
 
-	if (!$formData.projectProponents) $formData.projectProponents = [];
-	// if (!$formData.projectSDGs) $formData.projectSDGs = [];
+	if (!$formData.project_proponents) $formData.project_proponents = [];
+	if (!$formData.project_sdgs) $formData.project_sdgs = [];
 	if (!$formData.locations) $formData.locations = [];
    	if (!$formData.activities) $formData.activities = [];
     if (!$formData.indicators) $formData.indicators = [];
 
 	let proponentCounter = 0;
-	// let sdgCounter = 0;
 	let locationCounter = 0;
 	let activityCounter = 0;
 	let indicatorCounter = 0;
 
 	function addProponent() {
 		proponentCounter++;
-		$formData.projectProponents = [...$formData.projectProponents, { 
+		$formData.project_proponents = [...$formData.project_proponents, { 
 			id: `p-${proponentCounter}`, proponent_id: '', role: '' 
 		}];
 	}
 
 	function removeProponent(index: number) {
-		$formData.projectProponents = $formData.projectProponents.filter((_, i) => i !== index);
+		$formData.project_proponents = $formData.project_proponents.filter((_, i) => i !== index);
 	}
 
 	function addLocation() {
@@ -153,7 +149,7 @@
 					{#snippet children({ props })}
 						<Form.Label>Organizações</Form.Label>
 						<Select.Root type="single" {...props} bind:value={$formData.proponent_id}>
-							<Select.Trigger class="rounded-md max-w-xl w-full">{proponenttriggerContent}</Select.Trigger>
+							<Select.Trigger class="rounded-md max-w-xl w-full">{proponentTriggerContent}</Select.Trigger>
 							<Select.Content class="max-h-75">
 								{#each proponents as p (p.id)}
 									<Select.Item value={String(p.id)}>{p.name}</Select.Item>
@@ -168,20 +164,20 @@
 
 			<FormFieldWrapper
 				title="Outras Organizações"
-				items={$formData.projectProponents}
+				items={$formData.project_proponents}
 				itemTitlePrefix="Organização"
 				addLabel="+ Adicionar Organização"
 				onAdd={addProponent}
 				onRemove={removeProponent}
 			>
 				{#snippet children(id)}
-					<Form.Field {form} name={`projectProponents[${id}].proponent_id`} class="field">
+					<Form.Field {form} name={`project_proponents[${id}].proponent_id`} class="field">
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Organização</Form.Label>
-								<Select.Root type="single" {...props} bind:value={$formData.projectProponents[id].proponent_id}>
+								<Select.Root type="single" {...props} bind:value={$formData.project_proponents[id].proponent_id}>
 									<Select.Trigger class="w-full">
-										{proponents.find(p => String(p.id) === String($formData.projectProponents[id].proponent_id))?.name || 'Selecione uma Organização'}
+										{proponents.find(p => String(p.id) === String($formData.project_proponents[id].proponent_id))?.name || 'Selecione uma Organização'}
 									</Select.Trigger>
 									<Select.Content class="max-h60">
 										{#each proponents as p (p.id)}
@@ -194,11 +190,11 @@
 						<Form.FieldErrors />
 					</Form.Field>
 
-					<Form.Field {form} name={`projectProponents[${id}].role`} class="field">
+					<Form.Field {form} name={`project_proponents[${id}].role`} class="field">
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Função/Papel no Projeto</Form.Label>
-								<Input {...props} bind:value={$formData.projectProponents[id].role} placeholder="Ex: Financiador, Consultor" />
+								<Input {...props} bind:value={$formData.project_proponents[id].role} placeholder="Ex: Financiador, Consultor" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -206,10 +202,57 @@
 				{/snippet}
 			</FormFieldWrapper>
 
-			<Form.Field {form} name="projectProponents">
+			<Form.Field {form} name="project_proponents">
 				<Form.FieldErrors />
 			</Form.Field>
 
+			<Form.Field {form} name="project_sdgs">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label> Objetivos de Desenvolvimento Sustentável (ODS) </Form.Label>
+						<Form.Description class="mb-4">
+							Clique sobre um ODS para vinculá-lo ao projeto.
+						</Form.Description>
+						
+						<div class="flex flex-wrap gap-3 mt-2">
+							{#each sdgs as s (s.id)}
+								{@const isSelected = $formData.project_sdgs.includes(String(s.id))}
+								
+								<Button
+									type="button"
+									variant="outline"
+									class={cn(
+										"flex flex-col items-center justify-start rounded-none transition-all text-center gap-1 w-24 h-auto p-0 border-transparent relative select-none",
+										isSelected 
+											? "bg-primary text-primary-foreground shadow-sm font-semibold scale-[1.05] hover:bg-primary" 
+											: "opacity-50 hover:opacity-100"
+									)}
+									onclick={() => {
+										if (isSelected) {
+											$formData.project_sdgs = $formData.project_sdgs.filter(id => id !== String(s.id));
+										} else {
+											$formData.project_sdgs = [...$formData.project_sdgs, String(s.id)];
+										}
+									}}
+								>
+									<img 
+										src={s.iconUrl} 
+										alt={`ODS ${s.number} - ${s.name}`}
+										class="w-full h-auto object-cover"
+									/>
+
+									{#if isSelected}
+										<div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sx">
+											<X class="w-3 h-3" strokeWidth={2} />
+										</div>
+									{/if}
+								</Button>
+							{/each}
+						</div>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}

@@ -39,9 +39,11 @@ export interface ProponentOption {
 	name: string;
 }
 
-export interface SDGOption {
+export interface SdgOption {
 	id: string;
 	name: string;
+	number: number;
+	iconUrl: string
 }
 
 export interface ProjectFormProps {
@@ -50,7 +52,7 @@ export interface ProjectFormProps {
 	// Lista de proponentes para o campo de seleção
 	proponents: ProponentOption[];
 	// Lista de ODS para o campo de seleção
-	// sdgs: SDGOption[];
+	sdgs: SdgOption[];
 	// Título exibido no card do formulário
 	title?: string;
 	// Subtítulo/descrição exibida abaixo do título
