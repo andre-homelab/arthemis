@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import RecordActions from '$lib/components/RecordActions.svelte';
+	import ProponentForm from '$lib/components/ui/form/ProponentForm.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -16,26 +17,7 @@
 		<p class:success-message={form.success} class:error-message={!form.success}>{form.message}</p>
 	{/if}
 
-	<section class="panel">
-		<h2>Nova organização</h2>
-		<form method="POST" action="?/create" class="create-grid">
-			<label>
-				<span>Nome</span>
-				<Input name="name" placeholder="Nome da organização" required maxlength={150} />
-			</label>
-			<label>
-				<span>E-mail</span>
-				<Input
-					name="email"
-					type="email"
-					placeholder="contato@organizacao.com"
-					required
-					maxlength={150}
-				/>
-			</label>
-			<Button type="submit">Cadastrar</Button>
-		</form>
-	</section>
+	<ProponentForm data={data.form} action="?/create" />
 
 	<section class="panel list-panel">
 		<div class="section-heading">
@@ -78,14 +60,11 @@
 										/>
 									</form>
 								</td>
-								<td class="actions">
-									<Button type="submit" form={`organization-${organization.id}`} size="sm"
-										>Salvar</Button
-									>
-									<form method="POST" action="?/delete">
-										<input type="hidden" name="id" value={organization.id} />
-										<Button type="submit" variant="destructive" size="sm">Excluir</Button>
-									</form>
+								<td class="actions-cell">
+									<RecordActions
+										updateFormId={`organization-${organization.id}`}
+										deleteId={organization.id}
+									/>
 								</td>
 							</tr>
 						{/each}
@@ -150,20 +129,11 @@
 		margin: 0;
 	}
 
-	.create-grid,
 	.row-form {
 		display: grid;
-		grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) auto;
+		grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr);
 		gap: 12px;
-		align-items: end;
-	}
-
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		font-size: 0.8125rem;
-		color: var(--muted-foreground);
+		align-items: center;
 	}
 
 	.table-wrap {
@@ -180,7 +150,7 @@
 		padding: 10px 8px;
 		border-bottom: 1px solid var(--border);
 		text-align: left;
-		vertical-align: middle;
+		vertical-align: bottom;
 	}
 
 	th {
@@ -189,11 +159,11 @@
 		font-weight: 600;
 	}
 
-	.actions {
-		display: flex;
-		gap: 8px;
-		align-items: center;
+	.actions-cell {
+		width: 158px;
+		min-width: 158px;
 		white-space: nowrap;
+		vertical-align: middle;
 	}
 
 	.success-message,
@@ -218,7 +188,6 @@
 			padding: 20px;
 		}
 
-		.create-grid,
 		.row-form {
 			grid-template-columns: 1fr;
 		}

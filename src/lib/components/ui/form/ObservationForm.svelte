@@ -7,6 +7,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { ObservationProps } from './types.js';
 	import { CalendarDate, getLocalTimeZone, today, type DateValue } from '@internationalized/date';
@@ -15,11 +16,13 @@
 
 	let {
 		data,
+		indicators,
 		title = 'Observação',
 		description = 'Insira os dados da observação.',
 		submitLabel = 'Salvar',
+		action = '?/create',
 		class: className
-	}: ObservationProps = $props();
+	}: ObservationProps & { action?: string } = $props();
 
 	const form = superForm(data, {
 		validators: zod4Client(observationSchema),
@@ -27,6 +30,10 @@
 	});
 
 	const { form: formData, enhance, submitting } = form;
+
+	const observationTriggerContent = $derived(
+		indicators.find((i) => String(i.id) === String($formData.indicator_id))?.name ?? 'Selecione um indicador'
+	);
 
 	function toCalendarDate(date: Date | string | undefined) {
 		if (!date) return today(getLocalTimeZone());
@@ -85,17 +92,19 @@
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" use:enhance class="form-body">
+		<form method="POST" {action} use:enhance class="form-body">
 			<Form.Field {form} name="indicator_id">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Indicador</Form.Label>
-						<Input
-							{...props}
-							bind:value={$formData.indicator_id}
-							placeholder="Selecione um indicador"
-							maxlength={150}
-						/>
+						<Select.Root type="single" {...props} bind:value={$formData.indicator_id}>
+							<Select.Trigger class="w-70">{observationTriggerContent}</Select.Trigger>
+							<Select.Content class="max-h-75">
+								{#each indicators as indicator (indicator.id)}
+									<Select.Item value={String(indicator.id)}>{indicator.name}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

@@ -16,8 +16,9 @@
 		title = 'Nova Organização',
 		description = 'Preencha os dados da organização.',
 		submitLabel = 'Cadastrar Organização',
+		action = '?/create',
 		class: className
-	}: ProponentFormProps = $props();
+	}: ProponentFormProps & { action?: string } = $props();
 
 	const form = superForm(data, {
 		validators: zod4Client(proponentSchema),
@@ -43,7 +44,7 @@
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" use:enhance class="form-body">
+		<form method="POST" {action} use:enhance class="form-body">
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}

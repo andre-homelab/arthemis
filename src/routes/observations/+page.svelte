@@ -1,19 +1,11 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import RecordActions from '$lib/components/RecordActions.svelte';
+	import ObservationForm from '$lib/components/ui/form/ObservationForm.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-
-	const defaultPosition = JSON.stringify(
-		{
-			type: 'Point',
-			coordinates: [-52.38, -24.05]
-		},
-		null,
-		2
-	);
 </script>
 
 <div class="page-container">
@@ -26,28 +18,7 @@
 		<p class:success-message={form.success} class:error-message={!form.success}>{form.message}</p>
 	{/if}
 
-	<section class="panel">
-		<h2>Nova observação</h2>
-		<form method="POST" action="?/create" class="create-grid">
-			<label>
-				<span>Indicador</span>
-				<Input name="indicator_id" type="number" min="1" required placeholder="ID do indicador" />
-			</label>
-			<label>
-				<span>Valor</span>
-				<Input name="value" type="number" step="any" required placeholder="Valor observado" />
-			</label>
-			<label>
-				<span>Data</span>
-				<Input name="date" type="date" required />
-			</label>
-			<label class="position-field">
-				<span>Posição GeoJSON</span>
-				<Textarea name="position" value={defaultPosition} required class="geojson-input" />
-			</label>
-			<Button type="submit">Cadastrar</Button>
-		</form>
-	</section>
+	<ObservationForm data={data.form} indicators={data.indicators} action="?/create" />
 
 	<section class="panel list-panel">
 		<div class="section-heading">
@@ -66,15 +37,10 @@
 								<strong>Observação #{observation.id}</strong>
 								<span>Indicador #{observation.indicatorId}</span>
 							</div>
-							<div class="actions">
-								<Button type="submit" form={`observation-${observation.id}`} size="sm"
-									>Salvar</Button
-								>
-								<form method="POST" action="?/delete">
-									<input type="hidden" name="id" value={observation.id} />
-									<Button type="submit" variant="destructive" size="sm">Excluir</Button>
-								</form>
-							</div>
+							<RecordActions
+								updateFormId={`observation-${observation.id}`}
+								deleteId={observation.id}
+							/>
 						</header>
 
 						<form
@@ -175,15 +141,10 @@
 		margin: 0;
 	}
 
-	.create-grid,
 	.row-form {
 		display: grid;
-		grid-template-columns: minmax(120px, 160px) minmax(120px, 160px) minmax(140px, 180px) 1fr auto;
 		gap: 12px;
 		align-items: end;
-	}
-
-	.row-form {
 		grid-template-columns: minmax(120px, 160px) minmax(120px, 160px) minmax(140px, 180px) 1fr;
 	}
 
@@ -225,13 +186,6 @@
 		display: block;
 	}
 
-	.actions {
-		display: flex;
-		gap: 8px;
-		align-items: center;
-		white-space: nowrap;
-	}
-
 	.success-message,
 	.error-message {
 		border-radius: 8px;
@@ -254,7 +208,6 @@
 			padding: 20px;
 		}
 
-		.create-grid,
 		.row-form {
 			grid-template-columns: 1fr;
 		}

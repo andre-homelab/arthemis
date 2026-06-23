@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import RecordActions from '$lib/components/RecordActions.svelte';
+	import UserForm from '$lib/components/ui/form/UserForm.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -24,48 +25,7 @@
 		<p class:success-message={form.success} class:error-message={!form.success}>{form.message}</p>
 	{/if}
 
-	<section class="panel">
-		<h2>Novo usuário</h2>
-		<form method="POST" action="?/create" class="create-grid">
-			<label>
-				<span>Organização</span>
-				<select name="proponent_id" required>
-					<option value="">Selecione</option>
-					{#each data.proponents as proponent (proponent.id)}
-						<option value={proponent.id}>{proponent.name}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				<span>Usuário</span>
-				<Input name="username" required maxlength={150} autocomplete="username" />
-			</label>
-			<label>
-				<span>E-mail</span>
-				<Input name="email" type="email" required maxlength={150} />
-			</label>
-			<label>
-				<span>Senha</span>
-				<Input
-					name="password"
-					type="password"
-					required
-					minlength={8}
-					maxlength={255}
-					autocomplete="new-password"
-				/>
-			</label>
-			<label>
-				<span>Perfil</span>
-				<select name="role" required>
-					{#each roles as role (role.value)}
-						<option value={role.value}>{role.label}</option>
-					{/each}
-				</select>
-			</label>
-			<Button type="submit">Cadastrar</Button>
-		</form>
-	</section>
+	<UserForm data={data.form} proponents={data.proponents} action="?/create" />
 
 	<section class="panel list-panel">
 		<div class="section-heading">
@@ -127,12 +87,8 @@
 										</label>
 									</form>
 								</td>
-								<td class="actions">
-									<Button type="submit" form={`user-${user.id}`} size="sm">Salvar</Button>
-									<form method="POST" action="?/delete">
-										<input type="hidden" name="id" value={user.id} />
-										<Button type="submit" variant="destructive" size="sm">Excluir</Button>
-									</form>
+								<td class="actions-cell">
+									<RecordActions updateFormId={`user-${user.id}`} deleteId={user.id} />
 								</td>
 							</tr>
 						{/each}
@@ -203,13 +159,6 @@
 		margin: 0;
 	}
 
-	.create-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(170px, 1fr)) auto;
-		gap: 12px;
-		align-items: end;
-	}
-
 	.row-form {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(140px, 1fr));
@@ -248,7 +197,7 @@
 		padding: 10px 8px;
 		border-bottom: 1px solid var(--border);
 		text-align: left;
-		vertical-align: middle;
+		vertical-align: bottom;
 	}
 
 	th {
@@ -257,11 +206,11 @@
 		font-weight: 600;
 	}
 
-	.actions {
-		display: flex;
-		gap: 8px;
-		align-items: center;
+	.actions-cell {
+		width: 158px;
+		min-width: 158px;
 		white-space: nowrap;
+		vertical-align: middle;
 	}
 
 	.success-message,
@@ -286,7 +235,6 @@
 			padding: 20px;
 		}
 
-		.create-grid,
 		.row-form {
 			grid-template-columns: 1fr;
 		}

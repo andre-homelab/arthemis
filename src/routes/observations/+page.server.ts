@@ -7,7 +7,8 @@ import {
 	createObservations,
 	deleteObservation,
 	listObservations,
-	updateObservation
+	updateObservation,
+	listIndicators
 } from '$lib/server/arthemis-api.js';
 
 function requiredString(data: FormData, key: string): string {
@@ -33,7 +34,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	return {
 		form: await superValidate(zod4(observationSchema)),
-		observations: await listObservations(token)
+		observations: await listObservations(token),
+		indicators: await listIndicators(token)
 	};
 };
 
@@ -45,25 +47,25 @@ export const actions: Actions = {
 			throw redirect(303, '/login');
 		}
 
-		const form = await superValidate(zod4(observationSchema));
-		const data = await event.request.formData();
-		const indicatorId = parsePositiveNumber(requiredString(data, 'indicator_id'));
-		const value = Number(requiredString(data, 'value'));
-		const dateValue = requiredString(data, 'date');
-		const positionText = requiredString(data, 'position');
+		const form = await superValidate(event, zod4(observationSchema));
 
-		if (!indicatorId || !Number.isFinite(value) || !dateValue || !positionText) {
+		if (!form.valid) {
 			return fail(400, { form, message: 'Revise os dados da observação.' });
 		}
 
 		try {
+			const indicatorId = Number(form.data.indicator_id);
+			const value = form.data.value;
+			const date = form.data.date;
+			const position = form.data.position;
+
 			const observationIds = await createObservations(
 				[
 					{
 						indicatorId,
 						value,
-						date: new Date(`${dateValue}T12:00:00`),
-						position: parsePosition(positionText)
+						date,
+						position
 					}
 				],
 				token
