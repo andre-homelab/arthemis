@@ -79,17 +79,79 @@
 <style>
 	:global(.form-card) {
 		border-radius: 12px !important;
+		border: 1px solid var(--border) !important;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+	}
+
+	:global(.form-card .card-header) {
+		padding-bottom: 20px !important;
+		border-bottom: 1px solid var(--border) !important;
+	}
+
+	:global(.form-card .card-title) {
+		font-size: 20px !important;
+		font-weight: 600 !important;
+		color: var(--foreground) !important;
+	}
+
+	:global(.form-card .card-description) {
+		font-size: 14px !important;
+		color: var(--muted-foreground) !important;
+		margin-top: 4px !important;
+	}
+
+	:global(.form-card .card-content) {
+		padding: 20px 0 !important;
 	}
 
 	.form-body {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 16px;
+	}
+
+	:global(.form-card .form-field) {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	:global(.form-card .form-label) {
+		font-size: 13px !important;
+		font-weight: 600 !important;
+		color: var(--foreground) !important;
+	}
+
+	:global(.form-card input) {
+		height: 40px !important;
+		padding: 10px 12px !important;
+		border-radius: 8px !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.form-card input:focus) {
+		border-color: var(--primary) !important;
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent) !important;
 	}
 
 	:global(.form-footer) {
 		padding-left: 0 !important;
 		padding-right: 0 !important;
 		padding-bottom: 0 !important;
+		padding-top: 20px !important;
+		border-top: 1px solid var(--border) !important;
+	}
+
+	:global(.form-footer button) {
+		width: 100% !important;
+		height: 40px !important;
+		font-weight: 600 !important;
+		border-radius: 8px !important;
+		transition: all 0.2s ease !important;
+	}
+
+	:global(.form-footer button:hover:not(:disabled)) {
+		transform: translateY(-2px) !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 	}
 </style>
