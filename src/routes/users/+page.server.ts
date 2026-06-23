@@ -1,107 +1,146 @@
-import type { PageServerLoad, Actions } from './$types.js';
+import type { Actions, PageServerLoad } from './$types.js';
+import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { userSchema } from '$lib/components/ui/form/UserFormSchema.js';
-import { fail } from '@sveltejs/kit';
 import {
 	createBrainUser,
+	deleteUser,
 	listProponents,
-	loginAuthUser,
-	registerAuthUser
+	listUsers,
+	registerAuthUser,
+	updateUser
 } from '$lib/server/arthemis-api.js';
 
-/**
- * Função de carga da página de usuários (load).
- * Busca a lista de organizações proponentes registradas para alimentar o formulário de seleção
- * e inicializa a validação do formulário com o schema do Zod via sveltekit-superforms.
- *
- * @param event Contexto do servidor SvelteKit, incluindo cookies para verificação de token.
- * @returns Um objeto com a instância vazia do formulário de usuário e a lista de proponentes cadastrados.
- */
+function requiredString(data: FormData, key: string): string {
+	const value = data.get(key);
+	return typeof value === 'string' ? value.trim() : '';
+}
+
+function parseProponentId(value: string): number | null {
+	const id = Number(value);
+	return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 export const load: PageServerLoad = async ({ cookies }) => {
 	const token = cookies.get('arthemis_token');
-	// Carrega proponentes ativos a partir da API do Brain, enviando o token JWT
-	const proponents = await listProponents(token);
+
+	if (!token) {
+		throw redirect(303, '/login');
+	}
+
+	const [proponents, users] = await Promise.all([listProponents(token), listUsers(token)]);
 
 	return {
 		form: await superValidate(zod4(userSchema)),
-		proponents
+		proponents,
+		users
 	};
 };
 
-/**
- * Ações de formulário do SvelteKit (Form Actions).
- * Gerencia a requisição POST para o cadastro completo de um novo usuário.
- */
 export const actions: Actions = {
-	/**
-	 * Ação de criação de usuário padrão (default).
-	 * Executa um fluxo em 3 etapas integrando os microsserviços do sistema:
-	 * 1. Registra a credencial no serviço de Autenticação (Auth).
-	 * 2. Faz o login automático para recuperar um token JWT válido.
-	 * 3. Cria a entidade de usuário estendida com seu perfil no serviço de negócios (Brain).
-	 */
-	default: async (event) => {
-		// Valida os dados da submissão usando o Zod (UserFormSchema) no backend
-		const form = await superValidate(event, zod4(userSchema));
+	create: async (event) => {
+		const token = event.cookies.get('arthemis_token');
 
-		// Retorna erro 400 em caso de dados de formulário inconsistentes
-		if (!form.valid) {
-			return fail(400, { form });
+		if (!token) {
+			throw redirect(303, '/login');
 		}
 
-		// Valida se o ID da organização proponente vinculada é um número inteiro válido
-		const proponentID = Number(form.data.proponent_id);
-		if (!Number.isInteger(proponentID) || proponentID <= 0) {
-			return fail(400, {
-				form,
-				message: 'Organização inválida.'
-			});
+		const form = await superValidate(event, zod4(userSchema));
+
+		if (!form.valid) {
+			return fail(400, { form, message: 'Revise os dados do usuário.' });
+		}
+
+		const proponentId = parseProponentId(form.data.proponent_id);
+		if (!proponentId) {
+			return fail(400, { form, message: 'Organização inválida.' });
 		}
 
 		try {
-			// Passo 1: Registra as credenciais de autenticação básica (usuário/senha/função) no Auth Service
 			const authUser = await registerAuthUser({
 				username: form.data.username,
 				password: form.data.password,
 				role: form.data.role
 			});
 
-			// Passo 2: Efetua login com o usuário criado para obter o token JWT de acesso
-			const { token } = await loginAuthUser({
-				username: form.data.username,
-				password: form.data.password
-			});
-
-			// Passo 3: Cria o registro estendido do usuário na API do Brain (associação com proponente e e-mail)
-			// O UUID do Auth Service (`authUser.sub`) é usado como ID principal do usuário no Brain para manter a consistência.
 			await createBrainUser({
 				id: authUser.sub,
-				proponent_id: proponentID,
+				proponent_id: proponentId,
 				username: form.data.username,
 				email: form.data.email,
 				role: form.data.role,
 				token
 			});
 
-			// Define o cookie de acesso ativo com as credenciais do usuário cadastrado
-			event.cookies.set('arthemis_token', token, {
-				path: '/',
-				httpOnly: true,
-				sameSite: 'lax',
-				secure: event.url.protocol === 'https:',
-				maxAge: 60 * 60 * 24 // 24 horas
-			});
+			return {
+				form,
+				success: true,
+				message: 'Usuário cadastrado com sucesso!'
+			};
 		} catch (error) {
-			// Se qualquer uma das etapas falhar (ex: usuário duplicado ou timeout das APIs),
-			// cancela a operação e retorna o formulário preenchido com a mensagem de erro
 			return fail(400, {
 				form,
 				message: error instanceof Error ? error.message : 'Erro ao cadastrar usuário.'
 			});
 		}
+	},
 
-		// Retorna o formulário limpo em caso de sucesso absoluto
-		return { form };
+	update: async (event) => {
+		const token = event.cookies.get('arthemis_token');
+
+		if (!token) {
+			throw redirect(303, '/login');
+		}
+
+		const data = await event.request.formData();
+		const id = requiredString(data, 'id');
+		const proponentId = parseProponentId(requiredString(data, 'proponent_id'));
+		const username = requiredString(data, 'username');
+		const email = requiredString(data, 'email');
+		const role = requiredString(data, 'role') as 'admin' | 'manager' | 'visitor';
+
+		if (
+			!id ||
+			!proponentId ||
+			!username ||
+			!email ||
+			!['admin', 'manager', 'visitor'].includes(role)
+		) {
+			return fail(400, { message: 'Revise os dados do usuário antes de atualizar.' });
+		}
+
+		try {
+			await updateUser(id, { proponentId, username, email, role }, token);
+			return { success: true, message: 'Usuário atualizado com sucesso!' };
+		} catch (error) {
+			return fail(400, {
+				message: error instanceof Error ? error.message : 'Erro ao atualizar usuário.'
+			});
+		}
+	},
+
+	delete: async (event) => {
+		const token = event.cookies.get('arthemis_token');
+
+		if (!token) {
+			throw redirect(303, '/login');
+		}
+
+		const data = await event.request.formData();
+		const id = requiredString(data, 'id');
+
+		if (!id) {
+			return fail(400, { message: 'Usuário inválido.' });
+		}
+
+		try {
+			await deleteUser(id, token);
+			return { success: true, message: 'Usuário excluído com sucesso!' };
+		} catch (error) {
+			return fail(400, {
+				message: error instanceof Error ? error.message : 'Erro ao excluir usuário.'
+			});
+		}
 	}
 };

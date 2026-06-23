@@ -43,6 +43,31 @@ type ProponentResponse = {
 	id?: number;
 	Name?: string;
 	name?: string;
+	Email?: string;
+	email?: string;
+};
+
+type UserResponse = {
+	id?: string;
+	proponent_id?: number;
+	proponent?: ProponentResponse;
+	username?: string;
+	email?: string;
+	role?: 'admin' | 'manager' | 'visitor';
+};
+
+type ObservationResponse = {
+	ID?: number;
+	id?: number;
+	IndicatorID?: number;
+	indicatorID?: number;
+	indicator_id?: number;
+	Value?: number;
+	value?: number;
+	Date?: string;
+	date?: string;
+	Position?: unknown;
+	position?: unknown;
 };
 
 /**
@@ -55,53 +80,92 @@ export type ProponentOption = {
 	name: string;
 };
 
+export type ProponentRecord = ProponentOption & {
+	email: string;
+};
+
+export type UserRecord = {
+	id: string;
+	proponentId: string;
+	proponentName: string;
+	username: string;
+	email: string;
+	role: 'admin' | 'manager' | 'visitor';
+};
+
+export type ObservationRecord = {
+	id: string;
+	indicatorId: string;
+	value: number;
+	date: string;
+	position: unknown;
+	positionText: string;
+};
+
 export type CreationResponse = {
 	ID?: number;
 	id?: number;
 	/** Permite que a API retorne outros campos além dos acima */
 	[key: string]: unknown;
-}
+};
 
 export type CreateProponentInput = {
 	name: string;
 	email: string;
 };
 
+export type UpdateProponentInput = CreateProponentInput;
+
+export type UpdateUserInput = {
+	proponentId: number;
+	username: string;
+	email: string;
+	role: 'admin' | 'manager' | 'visitor';
+};
 
 export type CreateProjectInput = {
 	proponentId: number;
 	name: string;
 	justification: string;
 	lifetimeStart: Date;
-	lifetimeEnd: Date;  
+	lifetimeEnd: Date;
 };
 
 export type CreateLocationInput = {
-	projectId: number; 
+	projectId: number;
 	ecosystem: string;
 	country: string;
-	extentHa: number;   
+	extentHa: number;
 	position: string;
 };
 
 export type CreateActivityInput = {
-	projectId: number; 
+	projectId: number;
 	name: string;
 	description: string;
 	justification: string;
 };
 
 export type CreateIndicatorInput = {
-	projectId: number;         
-	locationId: number;    
-	activityId: number;     
+	projectId: number;
+	locationId: number;
+	activityId: number;
 	name: string;
 	unit: string;
-	valueBaseline: number; 
-	valueReference: number;   
+	valueBaseline: number;
+	valueReference: number;
 	observationMethod: string;
 	justification: string;
 };
+
+export type CreateObservationInput = {
+	indicatorId: number;
+	value: number;
+	date: Date;
+	position: unknown;
+};
+
+export type UpdateObservationInput = CreateObservationInput;
 
 /**
  * Auxiliar para analisar erros retornados das APIs.
@@ -125,6 +189,62 @@ async function parseError(response: Response, fallback: string): Promise<string>
 	} catch {
 		return body;
 	}
+}
+
+function authorizationHeaders(token: string): HeadersInit {
+	return {
+		'Content-Type': 'application/json',
+		Authorization: `Bearer ${token}`
+	};
+}
+
+function toDateInputValue(value: string | undefined): string {
+	if (!value) {
+		return '';
+	}
+
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return value.slice(0, 10);
+	}
+
+	return date.toISOString().slice(0, 10);
+}
+
+function normalizeProponent(proponent: ProponentResponse): ProponentRecord {
+	return {
+		id: String(proponent.id ?? proponent.ID ?? ''),
+		name: proponent.name ?? proponent.Name ?? '',
+		email: proponent.email ?? proponent.Email ?? ''
+	};
+}
+
+function normalizeUser(user: UserResponse): UserRecord {
+	const proponent = user.proponent ? normalizeProponent(user.proponent) : undefined;
+
+	return {
+		id: user.id ?? '',
+		proponentId: String(user.proponent_id ?? proponent?.id ?? ''),
+		proponentName: proponent?.name ?? '',
+		username: user.username ?? '',
+		email: user.email ?? '',
+		role: user.role ?? 'visitor'
+	};
+}
+
+function normalizeObservation(observation: ObservationResponse): ObservationRecord {
+	const position = observation.position ?? observation.Position ?? null;
+
+	return {
+		id: String(observation.id ?? observation.ID ?? ''),
+		indicatorId: String(
+			observation.indicator_id ?? observation.indicatorID ?? observation.IndicatorID ?? ''
+		),
+		value: Number(observation.value ?? observation.Value ?? 0),
+		date: toDateInputValue(observation.date ?? observation.Date),
+		position,
+		positionText: JSON.stringify(position, null, 2)
+	};
 }
 
 /**
@@ -194,10 +314,7 @@ export async function createBrainUser(input: {
 }): Promise<unknown> {
 	const response = await fetch(`${BRAIN_BASE_URL}/user/create`, {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${input.token}`
-		},
+		headers: authorizationHeaders(input.token),
 		body: JSON.stringify({
 			id: input.id,
 			proponent_id: input.proponent_id,
@@ -214,13 +331,13 @@ export async function createBrainUser(input: {
 	return response.json();
 }
 
-export async function createProponent(input: CreateProponentInput, token: string): Promise<unknown> {
+export async function createProponent(
+	input: CreateProponentInput,
+	token: string
+): Promise<unknown> {
 	const response = await fetch(`${BRAIN_BASE_URL}/proponent/create`, {
 		method: 'POST',
-		headers: { 
-			'Content-Type': 'application/json', 
-			Authorization: `Bearer ${token}`
-		},
+		headers: authorizationHeaders(token),
 		body: JSON.stringify(input)
 	});
 
@@ -231,6 +348,40 @@ export async function createProponent(input: CreateProponentInput, token: string
 	return response.json();
 }
 
+export async function updateProponent(
+	id: string,
+	input: UpdateProponentInput,
+	token: string
+): Promise<ProponentRecord> {
+	const response = await fetch(`${BRAIN_BASE_URL}/proponent/update/${id}`, {
+		method: 'PATCH',
+		headers: authorizationHeaders(token),
+		body: JSON.stringify({
+			Name: input.name,
+			Email: input.email
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao atualizar organização.'));
+	}
+
+	return normalizeProponent((await response.json()) as ProponentResponse);
+}
+
+export async function deleteProponent(id: string, token: string): Promise<boolean> {
+	const response = await fetch(`${BRAIN_BASE_URL}/proponent/delete/${id}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao excluir organização.'));
+	}
+
+	return (await response.json()) as boolean;
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -238,7 +389,7 @@ export async function createProponent(input: CreateProponentInput, token: string
  * @param token Opcional. Token JWT para autorização da chamada à API.
  * @returns Lista de opções de proponentes formatadas `{ id, name }`. Se falhar, retorna uma lista vazia.
  */
-export async function listProponents(token?: string): Promise<ProponentOption[]> {
+export async function listProponents(token?: string): Promise<ProponentRecord[]> {
 	const response = await fetch(`${BRAIN_BASE_URL}/proponent/`, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
 	});
@@ -249,22 +400,66 @@ export async function listProponents(token?: string): Promise<ProponentOption[]>
 
 	const proponents = (await response.json()) as ProponentResponse[];
 
-	return proponents
-		.map((proponent) => ({
-			id: String(proponent.id ?? proponent.ID ?? ''),
-			name: proponent.name ?? proponent.Name ?? ''
-		}))
-		.filter((proponent) => proponent.id && proponent.name);
+	return proponents.map(normalizeProponent).filter((proponent) => proponent.id && proponent.name);
 }
 
+export async function listUsers(token: string): Promise<UserRecord[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/user/`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
 
-export async function createProject(input: CreateProjectInput, token: string): Promise<number | null> {
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao listar usuários.'));
+	}
+
+	const users = (await response.json()) as UserResponse[];
+
+	return users.map(normalizeUser).filter((user) => user.id);
+}
+
+export async function updateUser(
+	id: string,
+	input: UpdateUserInput,
+	token: string
+): Promise<UserRecord> {
+	const response = await fetch(`${BRAIN_BASE_URL}/user/update/${id}`, {
+		method: 'PATCH',
+		headers: authorizationHeaders(token),
+		body: JSON.stringify({
+			proponent_id: input.proponentId,
+			username: input.username,
+			email: input.email,
+			role: input.role
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao atualizar usuário.'));
+	}
+
+	return normalizeUser((await response.json()) as UserResponse);
+}
+
+export async function deleteUser(id: string, token: string): Promise<boolean> {
+	const response = await fetch(`${BRAIN_BASE_URL}/user/delete/${id}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao excluir usuário.'));
+	}
+
+	return (await response.json()) as boolean;
+}
+
+export async function createProject(
+	input: CreateProjectInput,
+	token: string
+): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/project/create`, {
 		method: 'POST',
-		headers: { 
-			'Content-Type': 'application/json', 
-			Authorization: `Bearer ${token}` 
-		},
+		headers: authorizationHeaders(token),
 		body: JSON.stringify({
 			ProponentID: input.proponentId,
 			Name: input.name,
@@ -278,18 +473,18 @@ export async function createProject(input: CreateProjectInput, token: string): P
 		throw new Error(await parseError(response, 'Erro ao criar projeto.'));
 	}
 
-	const projectId = await response.json(); 	
+	const projectId = await response.json();
 	console.log(projectId);
-	return projectId
+	return projectId;
 }
 
-export async function createLocation(input: CreateLocationInput, token: string): Promise<number | null> {
+export async function createLocation(
+	input: CreateLocationInput,
+	token: string
+): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
 		method: 'POST',
-		headers: { 
-			'Content-Type': 'application/json', 
-			Authorization: `Bearer ${token}`
-		 },
+		headers: authorizationHeaders(token),
 		body: JSON.stringify({
 			ProjectID: input.projectId,
 			Ecosystem: input.ecosystem,
@@ -298,22 +493,22 @@ export async function createLocation(input: CreateLocationInput, token: string):
 			Position: JSON.parse(input.position)
 		})
 	});
-	
-	if (!response.ok) { 
+
+	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar localização.'));
 	}
 
-	const locationId = await response.json(); 	
-	return locationId
+	const locationId = await response.json();
+	return locationId;
 }
 
-export async function createActivity(input: CreateActivityInput, token: string): Promise<number | null> {
+export async function createActivity(
+	input: CreateActivityInput,
+	token: string
+): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/activity/create`, {
 		method: 'POST',
-		headers: { 
-			'Content-Type': 'application/json',
-			 Authorization: `Bearer ${token}` 
-			},
+		headers: authorizationHeaders(token),
 		body: JSON.stringify({
 			ProjectID: input.projectId,
 			Name: input.name,
@@ -325,32 +520,113 @@ export async function createActivity(input: CreateActivityInput, token: string):
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar atividade.'));
 	}
-	
-	const activityId = await response.json(); 	
+
+	const activityId = await response.json();
 	return activityId;
 }
 
-export async function createIndicator(input: CreateIndicatorInput, token: string): Promise<number | null> {
+export async function createIndicator(
+	input: CreateIndicatorInput,
+	token: string
+): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/indicator/create`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+		headers: authorizationHeaders(token),
 		body: JSON.stringify({
-			ProjectID: input.projectId,                 
-			LocationID: input.locationId,              
-			ActivityID: input.activityId,             
+			ProjectID: input.projectId,
+			LocationID: input.locationId,
+			ActivityID: input.activityId,
 			Name: input.name,
 			Unit: input.unit,
-			ValueBaseline: input.valueBaseline,        
-			ValueReference: input.valueReference,    
+			ValueBaseline: input.valueBaseline,
+			ValueReference: input.valueReference,
 			ObservationMethod: input.observationMethod,
 			Justification: input.justification
 		})
 	});
-	
+
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar indicador.'));
 	}
 
-	const indicatorId = await response.json(); 	
+	const indicatorId = await response.json();
 	return indicatorId;
+}
+
+export async function createObservations(
+	input: CreateObservationInput[],
+	token: string
+): Promise<number[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/observation/create`, {
+		method: 'POST',
+		headers: authorizationHeaders(token),
+		body: JSON.stringify(
+			input.map((observation) => ({
+				IndicatorID: observation.indicatorId,
+				Value: observation.value,
+				Date: observation.date,
+				Position: observation.position
+			}))
+		)
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao cadastrar observação.'));
+	}
+
+	return (await response.json()) as number[];
+}
+
+export async function listObservations(token: string): Promise<ObservationRecord[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/observation/`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		if (response.status === 404) {
+			return [];
+		}
+
+		throw new Error(await parseError(response, 'Erro ao listar observações.'));
+	}
+
+	const observations = (await response.json()) as ObservationResponse[];
+
+	return observations.map(normalizeObservation).filter((observation) => observation.id);
+}
+
+export async function updateObservation(
+	id: string,
+	input: UpdateObservationInput,
+	token: string
+): Promise<ObservationRecord> {
+	const response = await fetch(`${BRAIN_BASE_URL}/observation/update/${id}`, {
+		method: 'PATCH',
+		headers: authorizationHeaders(token),
+		body: JSON.stringify({
+			IndicatorID: input.indicatorId,
+			Value: input.value,
+			Date: input.date,
+			Position: input.position
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao atualizar observação.'));
+	}
+
+	return normalizeObservation((await response.json()) as ObservationResponse);
+}
+
+export async function deleteObservation(id: string, token: string): Promise<boolean> {
+	const response = await fetch(`${BRAIN_BASE_URL}/observation/delete/${id}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao excluir observação.'));
+	}
+
+	return (await response.json()) as boolean;
 }
