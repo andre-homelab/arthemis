@@ -4,6 +4,7 @@ import type { ProponentSchema } from './ProponentFormschema.js';
 import type { ProjectSchema } from './ProjectFormSchema.js';
 import type { UserSchema } from './UserFormSchema.js';
 import type { UserLoginSchema } from './UserLoginSchema.js';
+import type { ObservationSchema } from './ObservationFormSchema.js';
 
 // Props para o wrapper utilizado no formulário dos Projetos
 export interface FormFieldWrapperProps<T extends { id: string }> {
@@ -83,6 +84,20 @@ export interface UserFormProps {
 export interface UserLoginProps {
 	// Dados do formulário vindos do load() via superValidate
 	data: SuperValidated<Infer<UserLoginSchema>>;
+	// Título exibido no card do formulário
+	title?: string;
+	// Subtítulo/descrição exibida abaixo do título
+	description?: string;
+	// Texto do botão de submit
+	submitLabel?: string;
+	// Classe CSS adicional para o card externo
+	class?: string;
+}
+
+// Props para os componentes do formulário das Observações
+export interface ObservationProps {
+	// Dados do formulário vindos do load() via superValidate
+	data: SuperValidated<Infer<ObservationSchema>>;
 	// Título exibido no card do formulário
 	title?: string;
 	// Subtítulo/descrição exibida abaixo do título

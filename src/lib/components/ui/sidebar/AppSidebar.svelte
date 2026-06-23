@@ -4,6 +4,7 @@
 	import Building2Icon from '@lucide/svelte/icons/building-2';
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
+	import EyeIcon from '@lucide/svelte/icons/eye';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { SidebarItem, SidebarProps } from '$lib/components/ui/sidebar/types';
 
@@ -22,6 +23,11 @@
 			title: 'Projetos',
 			url: '/projects',
 			icon: FolderKanbanIcon
+		},
+		{
+			title: 'Observações',
+			url: '/observations',
+			icon: EyeIcon
 		},
 		{
 			title: 'Usuários',
