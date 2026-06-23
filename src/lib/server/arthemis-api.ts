@@ -1,4 +1,27 @@
 import { env } from '$env/dynamic/private';
+import type {
+	AuthUser,
+	LoginResponse,
+	ProponentResponse,
+	ProponentOption,
+	ProponentRecord,
+	ObservationResponse,
+	ObservationRecord,
+	IndicatorResponse,
+	IndicatorRecord,
+	CreationResponse,
+	UserResponse,
+	UserRecord,
+	CreateProponentInput,
+	UpdateProponentInput,
+	UpdateUserInput,
+	CreateProjectInput,
+	CreateLocationInput,
+	CreateActivityInput,
+	CreateIndicatorInput,
+	CreateObservationInput,
+	UpdateObservationInput
+} from '$lib/types';
 
 /**
  * URL base para a API de Autenticação (Arthemis Auth).
@@ -14,158 +37,6 @@ const AUTH_BASE_URL = env.ARTHEMIS_AUTH_URL;
  */
 const BRAIN_BASE_URL = env.ARTHEMIS_BRAIN_URL;
 
-/**
- * Estrutura de usuário retornada pelo serviço de autenticação após o registro.
- */
-type AuthUser = {
-	/** Identificador único do usuário (UUID gerado no serviço de autenticação). */
-	sub: string;
-	/** Nome de usuário/login. */
-	username: string;
-	/** Perfil/Nível de acesso atribuído ao usuário. */
-	role: 'admin' | 'manager' | 'visitor';
-};
-
-/**
- * Resposta padrão retornada pelo endpoint de login do serviço de autenticação.
- */
-type LoginResponse = {
-	/** Token JWT de acesso assinado. */
-	token: string;
-};
-
-/**
- * Formato bruto retornado pelo banco/API do Brain para proponentes (organizações).
- * Suporta formatos em PascalCase (GORM) e camelCase.
- */
-type ProponentResponse = {
-	ID?: number;
-	id?: number;
-	Name?: string;
-	name?: string;
-	Email?: string;
-	email?: string;
-};
-
-type UserResponse = {
-	id?: string;
-	proponent_id?: number;
-	proponent?: ProponentResponse;
-	username?: string;
-	email?: string;
-	role?: 'admin' | 'manager' | 'visitor';
-};
-
-type ObservationResponse = {
-	ID?: number;
-	id?: number;
-	IndicatorID?: number;
-	indicatorID?: number;
-	indicator_id?: number;
-	Value?: number;
-	value?: number;
-	Date?: string;
-	date?: string;
-	Position?: unknown;
-	position?: unknown;
-};
-
-/**
- * Tipo exportado e formatado para ser consumido nos componentes de seleção (Select) do frontend.
- */
-export type ProponentOption = {
-	/** Identificador único convertido para string. */
-	id: string;
-	/** Nome de exibição da organização proponente. */
-	name: string;
-};
-
-export type ProponentRecord = ProponentOption & {
-	email: string;
-};
-
-export type UserRecord = {
-	id: string;
-	proponentId: string;
-	proponentName: string;
-	username: string;
-	email: string;
-	role: 'admin' | 'manager' | 'visitor';
-};
-
-export type ObservationRecord = {
-	id: string;
-	indicatorId: string;
-	value: number;
-	date: string;
-	position: unknown;
-	positionText: string;
-};
-
-export type CreationResponse = {
-	ID?: number;
-	id?: number;
-	/** Permite que a API retorne outros campos além dos acima */
-	[key: string]: unknown;
-};
-
-export type CreateProponentInput = {
-	name: string;
-	email: string;
-};
-
-export type UpdateProponentInput = CreateProponentInput;
-
-export type UpdateUserInput = {
-	proponentId: number;
-	username: string;
-	email: string;
-	role: 'admin' | 'manager' | 'visitor';
-};
-
-export type CreateProjectInput = {
-	proponentId: number;
-	name: string;
-	justification: string;
-	lifetimeStart: Date;
-	lifetimeEnd: Date;
-};
-
-export type CreateLocationInput = {
-	projectId: number;
-	ecosystem: string;
-	country: string;
-	extentHa: number;
-	position: string;
-};
-
-export type CreateActivityInput = {
-	projectId: number;
-	name: string;
-	description: string;
-	justification: string;
-};
-
-export type CreateIndicatorInput = {
-	projectId: number;
-	locationId: number;
-	activityId: number;
-	name: string;
-	unit: string;
-	valueBaseline: number;
-	valueReference: number;
-	observationMethod: string;
-	justification: string;
-};
-
-export type CreateObservationInput = {
-	indicatorId: number;
-	value: number;
-	date: Date;
-	position: unknown;
-};
-
-export type UpdateObservationInput = CreateObservationInput;
 
 /**
  * Auxiliar para analisar erros retornados das APIs.
@@ -244,6 +115,25 @@ function normalizeObservation(observation: ObservationResponse): ObservationReco
 		date: toDateInputValue(observation.date ?? observation.Date),
 		position,
 		positionText: JSON.stringify(position, null, 2)
+	};
+}
+
+function normalizeIndicator(indicator: IndicatorResponse): IndicatorRecord {
+	return {
+		id: String(indicator.id ?? indicator.ID ?? ''),
+		locationId: Number(
+			indicator.location_id ?? indicator.locationID ?? indicator.LocationID ?? 0
+		),
+		activityId: Number(
+			indicator.activity_id ?? indicator.activityID ?? indicator.ActivityID ?? 0
+		),
+		name: indicator.name ?? indicator.Name ?? '',
+		unit: indicator.unit ?? indicator.Unit ?? '',
+		valueBaseline: Number(indicator.valueBaseline ?? indicator.ValueBaseline ?? 0),
+		valueReference: Number(indicator.valueReference ?? indicator.ValueReference ?? 0),
+		observationMethod:
+			indicator.observationMethod ?? indicator.ObservationMethod ?? '',
+		justification: indicator.justification ?? indicator.Justification ?? ''
 	};
 }
 
@@ -629,4 +519,22 @@ export async function deleteObservation(id: string, token: string): Promise<bool
 	}
 
 	return (await response.json()) as boolean;
+}
+
+export async function listIndicators(token: string): Promise<IndicatorRecord[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/indicator/`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		if (response.status === 404) {
+			return [];
+		}
+
+		throw new Error(await parseError(response, 'Erro ao listar indicadores.'));
+	}
+
+	const indicators = (await response.json()) as IndicatorResponse[];
+
+	return indicators.map(normalizeIndicator).filter((indicator) => indicator.id);
 }
