@@ -18,15 +18,23 @@ import {
  * @param event Contexto do servidor SvelteKit, incluindo cookies para verificação de token.
  * @returns Um objeto com a instância vazia do formulário de usuário e a lista de proponentes cadastrados.
  */
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('arthemis_token');
-	// Carrega proponentes ativos a partir da API do Brain, enviando o token JWT
-	const proponents = await listProponents(token);
+export const load: PageServerLoad = async ({ locals }) => {
+	const token = locals.token;
+	
+	try {
+		// Carrega proponentes ativos a partir da API do Brain, enviando o token JWT
+		const proponents = await listProponents(token);
 
-	return {
-		form: await superValidate(zod4(userSchema)),
-		proponents
-	};
+		return {
+			form: await superValidate(zod4(userSchema)),
+			proponents
+		};
+	} catch(error: unknown){
+		return {
+			form: await superValidate(zod4(userSchema)),
+			proponents: []
+		};
+	}
 };
 
 /**
@@ -53,10 +61,7 @@ export const actions: Actions = {
 		// Valida se o ID da organização proponente vinculada é um número inteiro válido
 		const proponentID = Number(form.data.proponent_id);
 		if (!Number.isInteger(proponentID) || proponentID <= 0) {
-			return fail(400, {
-				form,
-				message: 'Organização inválida.'
-			});
+			return fail(400, { form });
 		}
 
 		try {
@@ -92,13 +97,10 @@ export const actions: Actions = {
 				secure: event.url.protocol === 'https:',
 				maxAge: 60 * 60 * 24 // 24 horas
 			});
-		} catch (error) {
+		} catch (error: unknown) {
 			// Se qualquer uma das etapas falhar (ex: usuário duplicado ou timeout das APIs),
 			// cancela a operação e retorna o formulário preenchido com a mensagem de erro
-			return fail(400, {
-				form,
-				message: error instanceof Error ? error.message : 'Erro ao cadastrar usuário.'
-			});
+			return fail(400, { form });
 		}
 
 		// Retorna o formulário limpo em caso de sucesso absoluto

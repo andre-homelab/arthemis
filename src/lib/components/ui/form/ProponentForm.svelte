@@ -23,10 +23,13 @@
 		validators: zod4Client(proponentSchema),
 		onResult({ result }) {
 			if (result.type === 'success') {
-				toast.success(result.data?.message);
+				toast.success('Organização cadastrada com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
 			}
 			else if (result.type === 'error') {
-				toast.error('Erro desconhecido');
+				toast.error('Erro interno');
 			}
 		}
 	});

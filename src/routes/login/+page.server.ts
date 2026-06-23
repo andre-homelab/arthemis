@@ -49,15 +49,12 @@ export const actions: Actions = {
 				secure: event.url.protocol === 'https:', // Exige HTTPS em produção
 				maxAge: 60 * 60 * 24 // Duração de 1 dia (24 horas) em segundos
 			});
-		} catch (error) {
+		} catch (error: unknown) {
 			// Captura falhas de autenticação (usuário não encontrado ou senha errada) e retorna 401
-			return fail(401, {
-				form,
-				message: error instanceof Error ? error.message : 'Não foi possível autenticar.'
-			});
+			return fail(401, { form });
 		}
 
 		// Redireciona o usuário para a raiz do sistema após a autenticação bem-sucedida
-		throw redirect(303, '/');
+		redirect(303, '/');
 	}
 };

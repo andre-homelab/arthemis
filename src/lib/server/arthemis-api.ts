@@ -45,6 +45,13 @@ type ProponentResponse = {
 	name?: string;
 };
 
+type SdgResponse = {
+	ID: number;
+	Name: string;
+	Number: number;
+	IconURL: string;
+};
+
 /**
  * Tipo exportado e formatado para ser consumido nos componentes de seleção (Select) do frontend.
  */
@@ -53,6 +60,14 @@ export type ProponentOption = {
 	id: string;
 	/** Nome de exibição da organização proponente. */
 	name: string;
+};
+
+// !iconUrl para dispor os ícones conforme as ODS forem selecionadas; talvez um botão X em hover no ícone para remover uma ODS
+export type SdgOption = {
+	id: string;
+	name: string;
+	number: number;
+	iconUrl: string;
 };
 
 export type CreationResponse = {
@@ -67,13 +82,19 @@ export type CreateProponentInput = {
 	email: string;
 };
 
+export type CreateProjectProponentInput = {
+	projectId: number;
+	proponentId: number;
+	role: string;
+};
 
 export type CreateProjectInput = {
 	proponentId: number;
 	name: string;
 	justification: string;
 	lifetimeStart: Date;
-	lifetimeEnd: Date;  
+	lifetimeEnd: Date;
+	sdgIds: number[];
 };
 
 export type CreateLocationInput = {
@@ -89,6 +110,7 @@ export type CreateActivityInput = {
 	name: string;
 	description: string;
 	justification: string;
+	locationIds: number[];
 };
 
 export type CreateIndicatorInput = {
@@ -231,6 +253,30 @@ export async function createProponent(input: CreateProponentInput, token: string
 	return response.json();
 }
 
+export async function createProjectProponent(input: CreateProjectProponentInput[], token: string): Promise<number[] | null> {
+	const projectId = input[0].projectId;
+
+	const response = await fetch(`${BRAIN_BASE_URL}/project/${projectId}/add_proponent`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}` 
+		},
+		body: JSON.stringify(input.map(p => ({
+			ProjectID: p.projectId,
+			ProponentID: p.proponentId,
+			Role: p.role
+		})))
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar organização do projeto.'));
+	}
+	
+	const projectProponentIds = await response.json();
+	return projectProponentIds;
+}
+
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -257,6 +303,26 @@ export async function listProponents(token?: string): Promise<ProponentOption[]>
 		.filter((proponent) => proponent.id && proponent.name);
 }
 
+export async function listSdgs(token?: string): Promise<SdgOption[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/sdg/`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : undefined
+	});
+
+	if (!response.ok) {
+		return [];
+	}
+
+	const sdgs = (await response.json()) as SdgResponse[];
+
+	return sdgs
+		.map((sdg) => ({
+			id: String(sdg.ID),
+			name: sdg.Name,
+			number: sdg.Number,
+			iconUrl: sdg.IconURL
+		}))
+		.filter((sdg) => sdg.id && sdg.name && sdg.number && sdg.iconUrl);
+}
 
 export async function createProject(input: CreateProjectInput, token: string): Promise<number | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/project/create`, {
@@ -270,7 +336,8 @@ export async function createProject(input: CreateProjectInput, token: string): P
 			Name: input.name,
 			Justification: input.justification,
 			LifetimeStart: input.lifetimeStart,
-			LifetimeEnd: input.lifetimeEnd
+			LifetimeEnd: input.lifetimeEnd,
+			SdgIDs: input.sdgIds
 		})
 	});
 
@@ -279,78 +346,78 @@ export async function createProject(input: CreateProjectInput, token: string): P
 	}
 
 	const projectId = await response.json(); 	
-	console.log(projectId);
 	return projectId
 }
 
-export async function createLocation(input: CreateLocationInput, token: string): Promise<number | null> {
+export async function createLocation(input: CreateLocationInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
 		method: 'POST',
 		headers: { 
 			'Content-Type': 'application/json', 
 			Authorization: `Bearer ${token}`
 		 },
-		body: JSON.stringify({
-			ProjectID: input.projectId,
-			Ecosystem: input.ecosystem,
-			Country: input.country,
-			Extent: input.extentHa,
-			Position: JSON.parse(input.position)
-		})
+		body: JSON.stringify(input.map(l => ({
+			ProjectID: l.projectId,
+			Ecosystem: l.ecosystem,
+			Country: l.country,
+			Extent: l.extentHa,
+			Position: JSON.parse(l.position)
+		})))
 	});
 	
 	if (!response.ok) { 
 		throw new Error(await parseError(response, 'Erro ao criar localização.'));
 	}
 
-	const locationId = await response.json(); 	
-	return locationId
+	const locationIds = await response.json(); 	
+	return locationIds
 }
 
-export async function createActivity(input: CreateActivityInput, token: string): Promise<number | null> {
+export async function createActivity(input: CreateActivityInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/activity/create`, {
 		method: 'POST',
 		headers: { 
 			'Content-Type': 'application/json',
 			 Authorization: `Bearer ${token}` 
 			},
-		body: JSON.stringify({
-			ProjectID: input.projectId,
-			Name: input.name,
-			Description: input.description,
-			Justification: input.justification
-		})
+		body: JSON.stringify(input.map(a => ({
+			ProjectID: a.projectId,
+			Name: a.name,
+			Description: a.description,
+			Justification: a.justification,
+			LocationIDs: a.locationIds 
+		})))
 	});
 
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar atividade.'));
 	}
 	
-	const activityId = await response.json(); 	
-	return activityId;
+	const activityIds = await response.json(); 	
+	return activityIds;
 }
 
-export async function createIndicator(input: CreateIndicatorInput, token: string): Promise<number | null> {
+export async function createIndicator(input: CreateIndicatorInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/indicator/create`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-		body: JSON.stringify({
-			ProjectID: input.projectId,                 
-			LocationID: input.locationId,              
-			ActivityID: input.activityId,             
-			Name: input.name,
-			Unit: input.unit,
-			ValueBaseline: input.valueBaseline,        
-			ValueReference: input.valueReference,    
-			ObservationMethod: input.observationMethod,
-			Justification: input.justification
-		})
+		body: JSON.stringify(input.map(i => ({
+			ProjectID: i.projectId,                 
+			LocationID: i.locationId,              
+			ActivityID: i.activityId,             
+			Name: i.name,
+			Unit: i.unit,
+			ValueBaseline: i.valueBaseline,        
+			ValueReference: i.valueReference,    
+			ObservationMethod: i.observationMethod,
+			Justification: i.justification
+		})))
 	});
 	
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar indicador.'));
 	}
 
-	const indicatorId = await response.json(); 	
-	return indicatorId;
+	const indicatorIds = await response.json(); 	
+	return indicatorIds;
 }

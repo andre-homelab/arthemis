@@ -17,10 +17,12 @@
 	import { untrack } from 'svelte';
 	import FormFieldWrapper from './FormFieldWrapper.svelte';
 	import { toast } from 'svelte-sonner';
+	import X from '@lucide/svelte/icons/x';
 
 	let {
 		data,
 		proponents,
+		sdgs,
 		title = 'Novo Projeto',
 		description = 'Preencha os dados do projeto.',
 		submitLabel = 'Cadastrar Projeto',
@@ -31,19 +33,22 @@
 		validators: zod4Client(projectSchema),
 		dataType: 'json',
 		onResult({ result }) {
-			if (result.type === 'success') {
-				toast.success(result.data?.message);
+			if (result.type === 'success' ) {
+				toast.success('Projeto cadastrado com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
 			}
 			else if (result.type === 'error') {
-				toast.error('Erro desconhecido');
+				toast.error('Erro interno');
 			}
 		}
 	});
 
 	const { form: formData, enhance, submitting } = form;
 
-	const triggerContent = $derived(
-		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione sua Organização'
+	const proponentTriggerContent = $derived(
+		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione uma Organização'
 	);
 
 	/*
@@ -70,13 +75,32 @@
 		});
 	});
 
+	if (!$formData.project_proponents) $formData.project_proponents = [];
+	if (!$formData.project_sdgs) $formData.project_sdgs = [];
 	if (!$formData.locations) $formData.locations = [];
    	if (!$formData.activities) $formData.activities = [];
     if (!$formData.indicators) $formData.indicators = [];
 
+	let proponentCounter = 0;
+	let locationCounter = 0;
+	let activityCounter = 0;
+	let indicatorCounter = 0;
+
+	function addProponent() {
+		proponentCounter++;
+		$formData.project_proponents = [...$formData.project_proponents, { 
+			id: `p-${proponentCounter}`, proponent_id: '', role: '' 
+		}];
+	}
+
+	function removeProponent(index: number) {
+		$formData.project_proponents = $formData.project_proponents.filter((_, i) => i !== index);
+	}
+
 	function addLocation() {
+		locationCounter++;
 		$formData.locations = [...$formData.locations, { 
-			id: crypto.randomUUID(), ecosystem: '', extent_ha: 0, country: '', position: '' 
+			id: `l-${locationCounter}`, ecosystem: '', extent_ha: 0, country: '', position: '' 
 		}];
 	}
 
@@ -85,8 +109,9 @@
 	}
 
 	function addActivity() {
+		activityCounter++;
 		$formData.activities = [...$formData.activities, {
-			id: crypto.randomUUID(), name: '', description: '', justification: ''
+			id: `a-${activityCounter}`, name: '', description: '', justification: '', location_ids: []
        	}];
    }
 
@@ -95,8 +120,9 @@
    }
 
    function addIndicator() {
+	   indicatorCounter++;
        $formData.indicators = [...$formData.indicators, {
-           id: crypto.randomUUID(), location_id: '', activity_id: '', name: '', unit: '',
+           id: `i-${indicatorCounter}`, location_id: '', activity_id: '', name: '', unit: '',
            value_baseline: 0, value_reference: 0, observation_method: '', justification: ''
        }];
    }
@@ -116,35 +142,117 @@
 
 	<Card.Content>
 		<form method="POST" use:enhance class="form-body">
+			<Form.Field {form} name="name">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>Nome do Projeto</Form.Label>
+						<Input {...props} bind:value={$formData.name} placeholder="Nome do projeto" maxlength={150} class="rounded-md max-w-xl w-full"
+						/>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+
 			<Form.Field {form} name="proponent_id">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Organizações</Form.Label>
+						<Form.Label>Organização responsável pelo projeto.</Form.Label>
 						<Select.Root type="single" {...props} bind:value={$formData.proponent_id}>
-							<Select.Trigger class="rounded-md max-w-xl w-full">{triggerContent}</Select.Trigger>
-							<Select.Content class="max-h-75">
+							<Select.Trigger class="max-w-xl w-full">{proponentTriggerContent}</Select.Trigger>
+							<Select.Content class="rounded-md max-h-75">
 								{#each proponents as p (p.id)}
-									<Select.Item value={String(p.id)}>{p.name}</Select.Item>
+									<Select.Item class="rounded-md" value={String(p.id)}>{p.name}</Select.Item>
 								{/each}
 							</Select.Content>
 						</Select.Root>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Organização responsável pelo projeto.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<Form.Field {form} name="name">
+			<FormFieldWrapper
+				title="Outras Organizações"
+				items={$formData.project_proponents}
+				itemTitlePrefix="Organização"
+				addLabel="+ Adicionar Organização"
+				onAdd={addProponent}
+				onRemove={removeProponent}
+			>
+				{#snippet children(id)}
+					<Form.Field {form} name={`project_proponents[${id}].proponent_id`} class="field">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label class="text-xs">Organização</Form.Label>
+								<Select.Root type="single" {...props} bind:value={$formData.project_proponents[id].proponent_id}>
+									<Select.Trigger class="w-full">
+										{proponents.find(p => String(p.id) === String($formData.project_proponents[id].proponent_id))?.name || 'Selecione uma Organização'}
+									</Select.Trigger>
+									<Select.Content class="rounded-md max-h60">
+										{#each proponents as p (p.id)}
+											<Select.Item class="rounded-md" value={String(p.id)}>{p.name}</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+
+					<Form.Field {form} name={`project_proponents[${id}].role`} class="field">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label class="text-xs">Função/Papel no Projeto</Form.Label>
+								<Input {...props} bind:value={$formData.project_proponents[id].role} class="rounded-md" placeholder="Ex: Financiador, Consultor" />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				{/snippet}
+			</FormFieldWrapper>
+
+			<Form.Field {form} name="project_proponents">
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<Form.Field {form} name="project_sdgs">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Nome do Projeto</Form.Label>
-						<Input
-							{...props}
-							bind:value={$formData.name}
-							placeholder="Nome do projeto"
-							maxlength={150}
-							class = "rounded-md max-w-xl w-full"
-						/>
+						<Form.Label> Objetivos de Desenvolvimento Sustentável (ODS) </Form.Label>
+						<Form.Description class="mb-4">
+							Clique sobre um ODS para vinculá-lo ao projeto.
+						</Form.Description>
+						
+						<div class="flex flex-wrap gap-3 mt-2">
+							{#each sdgs as s (s.id)}
+								{@const isSelected = $formData.project_sdgs.includes(String(s.id))}
+								
+								<Button
+									type="button"
+									variant="outline"
+									class={cn(
+										"flex flex-col items-center justify-start rounded-none transition-all text-center gap-1 w-24 h-auto p-0 border-transparent relative select-none",
+										isSelected 
+											? "bg-primary text-primary-foreground shadow-sm font-semibold scale-[1.05] hover:bg-primary" 
+											: "opacity-50 hover:opacity-100"
+									)}
+									onclick={() => {
+										if (isSelected) {
+											$formData.project_sdgs = $formData.project_sdgs.filter(id => id !== String(s.id));
+										} else {
+											$formData.project_sdgs = [...$formData.project_sdgs, String(s.id)];
+										}
+									}}
+								>
+									<img src={s.iconUrl} alt={`ODS ${s.number} - ${s.name}`} class="w-full h-auto object-cover" />
+
+									{#if isSelected}
+										<div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-sx">
+											<X class="w-3 h-3" strokeWidth={2} />
+										</div>
+									{/if}
+								</Button>
+							{/each}
+						</div>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -211,7 +319,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Ecossistema</Form.Label>
-								<Input {...props} bind:value={$formData.locations[id].ecosystem} placeholder="Ex: Amazônia" />
+								<Input {...props} bind:value={$formData.locations[id].ecosystem} placeholder="Ex: Amazônia" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -221,7 +329,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">País</Form.Label>
-								<Input {...props} bind:value={$formData.locations[id].country} placeholder="Ex: Brasil" />
+								<Input {...props} bind:value={$formData.locations[id].country} placeholder="Ex: Brasil" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -231,7 +339,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Extensão (Hectares)</Form.Label>
-								<Input {...props} bind:value={$formData.locations[id].extent_ha} type="number" step="0.01" />
+								<Input {...props} bind:value={$formData.locations[id].extent_ha} type="number" step="0.01" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -241,7 +349,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Posição / Coordenadas</Form.Label>
-								<Input {...props} bind:value={$formData.locations[id].position} placeholder="Ex:" />
+								<Input {...props} bind:value={$formData.locations[id].position} placeholder="Ex:" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -266,7 +374,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Nome</Form.Label>
-								<Input {...props} bind:value={$formData.activities[id].name} placeholder="Ex: Remoção de resíduos sólidos" />
+								<Input {...props} bind:value={$formData.activities[id].name} placeholder="Ex: Remoção de resíduos sólidos" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -301,6 +409,52 @@
 						</Form.Control>
 						<Form.FieldErrors />
 					</Form.Field>
+
+					<Form.Field {form} name={`activities[${id}].location_ids`} class="field">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label class="text-xs">Localizações da Atividade</Form.Label>
+								
+								{#if $formData.locations.length === 0}
+									<div class="p-3 border border-dashed rounded-md bg-muted/50 text-xs text-destructive mt-1">
+										Nenhum local cadastrado. Adicione pelo menos um local na seção de locais primeiro.
+									</div>
+								{:else}
+									<div class="flex flex-wrap gap-2 mt-1">
+										{#each $formData.locations as l (l.id)}
+											{@const isSelected = $formData.activities[id].location_ids.includes(l.id)}
+											
+											<Button
+												type="button"
+												variant="outline"
+												class={cn(
+													"text-xs h-8 px-3 transition-all",
+													isSelected 
+														? "border border-black font-semibold shadow-sm scale-[1.02]" 
+														: "opacity-50 hover:opacity-100"
+												)}
+												onclick={() => {
+													if (isSelected) {
+														$formData.activities[id].location_ids = $formData.activities[id].location_ids.filter(lId => lId !== l.id);
+													} else {
+														$formData.activities[id].location_ids = [...$formData.activities[id].location_ids, l.id];
+													}
+												}}
+											>
+												{l.ecosystem || 'Novo Local'}
+												{#if isSelected}
+													<div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+														<X class="w-3 h-3" strokeWidth={2} />
+													</div>
+												{/if}
+											</Button>
+										{/each}
+									</div>
+								{/if}								
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 				{/snippet}
 			</FormFieldWrapper>
 
@@ -321,7 +475,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Nome do Indicador</Form.Label>
-								<Input {...props} bind:value={$formData.indicators[id].name} placeholder="Ex: Número de árvores plantadas" />
+								<Input {...props} bind:value={$formData.indicators[id].name} placeholder="Ex: Número de árvores plantadas" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -331,7 +485,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Unidade</Form.Label>
-								<Input {...props} bind:value={$formData.indicators[id].unit} placeholder="Ex: ha, unidades, %" />
+								<Input {...props} bind:value={$formData.indicators[id].unit} placeholder="Ex: ha, unidades, %" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -343,12 +497,12 @@
 								<Form.Label class="text-xs">Localização</Form.Label>
 								<Select.Root type="single" {...props} bind:value={$formData.indicators[id].location_id}>
 									<Select.Trigger class="w-full">
-										{$formData.locations.find(l => l.id === $formData.indicators[id].location_id)?.ecosystem || 'Selecione o Local...'}
+										{$formData.locations.find(l => l.id === $formData.indicators[id].location_id)?.ecosystem || 'Selecione uma Localização'}
 									</Select.Trigger>
-									<Select.Content class="max-h-60">
-										{#each $formData.locations as loc (loc.id)}
-											<Select.Item value={loc.id}>
-												{loc.ecosystem ? loc.ecosystem : `Local sem nome`}
+									<Select.Content class="rounded-md max-h-60">
+										{#each $formData.locations as l (l.id)}
+											<Select.Item class="rounded-md" value={l.id}>
+												{l.ecosystem ? l.ecosystem : `Local sem nome`}
 											</Select.Item>
 										{/each}
 									</Select.Content>
@@ -364,11 +518,11 @@
 								<Form.Label class="text-xs">Atividade Vinculada</Form.Label>
 								<Select.Root type="single" {...props} bind:value={$formData.indicators[id].activity_id}>
 									<Select.Trigger class="w-full">
-										{$formData.activities.find(a => a.id === $formData.indicators[id].activity_id)?.name || 'Selecione a Atividade...'}
+										{$formData.activities.find(a => a.id === $formData.indicators[id].activity_id)?.name || 'Selecione uma Atividade'}
 									</Select.Trigger>
-									<Select.Content class="max-h-60">
+									<Select.Content class="rounded-md max-h-60">
 										{#each $formData.activities as act (act.id)}
-											<Select.Item value={act.id}>
+											<Select.Item class="rounded-md" value={act.id}>
 												{act.name ? act.name : `Atividade sem nome`}
 											</Select.Item>
 										{/each}
@@ -383,7 +537,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Valor Baseline</Form.Label>
-								<Input {...props} bind:value={$formData.indicators[id].value_baseline} type="number" step="0.01" />
+								<Input {...props} bind:value={$formData.indicators[id].value_baseline} type="number" step="0.01" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -393,7 +547,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Valor de Referência (Meta)</Form.Label>
-								<Input {...props} bind:value={$formData.indicators[id].value_reference} type="number" step="0.01" />
+								<Input {...props} bind:value={$formData.indicators[id].value_reference} type="number" step="0.01" class="rounded-md" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />

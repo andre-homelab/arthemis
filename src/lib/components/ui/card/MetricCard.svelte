@@ -58,7 +58,7 @@
 
   .metric-label {
     font-size: 14px;
-    color: #444;
+    color: var(--foreground) !important;
     font-weight: 500;
   }
 
@@ -68,7 +68,7 @@
   .metric-value {
     font-size: 32px;
     font-weight: 700;
-    color: #111;
+    color: var(--foreground) !important;
     margin-bottom: 4px;
     letter-spacing: -1px;
   }
