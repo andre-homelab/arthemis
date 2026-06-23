@@ -11,7 +11,6 @@ import {
     createLocation, 
     createActivity, 
     createIndicator,
-	createProjectSdg,
 } from '$lib/server/arthemis-api.js';
 
 
@@ -48,7 +47,8 @@ export const actions: Actions = {
                 name: data.name,
                 justification: data.justification,
                 lifetimeStart: data.lifetime_start,
-                lifetimeEnd: data.lifetime_end
+                lifetimeEnd: data.lifetime_end,
+				sdgIds: data.project_sdgs.map(id => Number(id))
             }, token);
 			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
@@ -62,13 +62,6 @@ export const actions: Actions = {
 
 				await createProjectProponent(projectProponents, token);
 			}
-
-			const projectSdgs = data.project_sdgs.map(s => ({
-				projectId: projectId,
-				sdgId: Number(s),
-			}));
-
-			await createProjectSdg(projectSdgs, token);
 
 			const locations = data.locations.map(l => ({
 				projectId: projectId,
@@ -87,12 +80,19 @@ export const actions: Actions = {
 				locationIdMap.set(l.id, locationIds[i]);
 			})
 
-			const activities = data.activities.map(a => ({
+			const activities = data.activities.map(a => {
+				const locationIds = a.location_ids
+                    .map(id => locationIdMap.get(id))
+					.filter(id => id !== undefined);
+
+				return {
 					projectId: projectId,
-                    name: a.name,
-                    description: a.description,
-                    justification: a.justification
-			}));
+					name: a.name,
+					description: a.description,
+					justification: a.justification,
+					locationIds: locationIds
+				}
+			});
 
 			const activityIdMap = new Map<string, number>();
 			const activityIds = await createActivity(activities, token);

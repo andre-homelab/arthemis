@@ -4,7 +4,8 @@ const activitySchema = z.object({
    id: z.string(),
    name: z.string().min(2, 'Nome da atividade é obrigatório'),
    description: z.string().min(5, 'Descrição é obrigatória'),
-   justification: z.string().min(5, 'Justificativa é obrigatória')
+   justification: z.string().min(5, 'Justificativa é obrigatória'),
+   location_ids: z.array(z.string()).min(1, 'Vincule pelo menos uma localização')
 });
 
 const indicatorSchema = z.object({
@@ -45,17 +46,22 @@ export const projectSchema = z.object({
 
 	justification: z.string().min(10, 'Justificativa deve ter pelo menos 10 caracteres'),
 
+	project_proponents: z.array(projectProponentSchema).default([]),
+	project_sdgs: z.array(z.string()).default([]),
 	locations: z.array(locationSchema).default([]),
 	activities: z.array(activitySchema).default([]),
-   	indicators: z.array(indicatorSchema).default([]),
-	project_proponents: z.array(projectProponentSchema).default([]),
-	project_sdgs: z.array(z.string()).default([])
+   	indicators: z.array(indicatorSchema).default([])
 })
 	.refine((data) => data.lifetime_start <= data.lifetime_end, {
 			message: 'A data de término não pode ser anterior à data de início',
 			path: ['lifetime_end']
 	})
 	
+	.refine((data) => data.project_sdgs.length >= 1, {
+		message: 'O projeto deve conter pelo menos um ODS.',
+		path: ['project_sdgs']
+	})
+
 	.refine((data) => data.locations.length >= 1, {
 		message: 'O projeto deve conter pelo menos uma localização.',
 		path: ['locations']
@@ -71,10 +77,6 @@ export const projectSchema = z.object({
 		path: ['indicators']
 	})
 
-	.refine((data) => data.project_sdgs.length >= 1, {
-		message: 'O projeto deve conter pelo menos um ODS.',
-		path: ['project_sdgs']
-	})
 
 	.refine(
 		(data) => {

@@ -88,17 +88,13 @@ export type CreateProjectProponentInput = {
 	role: string;
 };
 
-export type CreateProjectSdgInput = {
-	projectId: number;
-	sdgId: number;
-}
-
 export type CreateProjectInput = {
 	proponentId: number;
 	name: string;
 	justification: string;
 	lifetimeStart: Date;
-	lifetimeEnd: Date;  
+	lifetimeEnd: Date;
+	sdgIds: number[];
 };
 
 export type CreateLocationInput = {
@@ -114,6 +110,7 @@ export type CreateActivityInput = {
 	name: string;
 	description: string;
 	justification: string;
+	locationIds: number[];
 };
 
 export type CreateIndicatorInput = {
@@ -280,29 +277,6 @@ export async function createProjectProponent(input: CreateProjectProponentInput[
 	return projectProponentIds;
 }
 
-export async function createProjectSdg(input: CreateProjectSdgInput[], token: string): Promise<number[] | null> {
-	const projectId = input[0].projectId;
-
-	const response = await fetch(`${BRAIN_BASE_URL}/project/${projectId}/add_sdg`, {
-		method: 'POST',
-		headers: { 
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`
-		},
-		body: JSON.stringify(input.map(s => ({
-			ProjectID: s.projectId,
-			SdgID: s.sdgId
-		})))
-	});
-
-	if (!response.ok) {
-		throw new Error(await parseError(response, 'Erro ao criar organização do projeto.'));
-	}
-	
-	const projectSdgIds = await response.json();
-	return projectSdgIds;
-}
-
 /**
  * Lista todas as organizações proponentes cadastradas no serviço Brain.
  * É usado principalmente para preencher seletores (Select) nos formulários de cadastro.
@@ -362,7 +336,8 @@ export async function createProject(input: CreateProjectInput, token: string): P
 			Name: input.name,
 			Justification: input.justification,
 			LifetimeStart: input.lifetimeStart,
-			LifetimeEnd: input.lifetimeEnd
+			LifetimeEnd: input.lifetimeEnd,
+			SdgIDs: input.sdgIds
 		})
 	});
 
@@ -409,7 +384,8 @@ export async function createActivity(input: CreateActivityInput[], token: string
 			ProjectID: a.projectId,
 			Name: a.name,
 			Description: a.description,
-			Justification: a.justification
+			Justification: a.justification,
+			LocationIDs: a.locationIds 
 		})))
 	});
 
