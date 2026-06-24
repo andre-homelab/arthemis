@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import RecordActions from '$lib/components/RecordActions.svelte';
+	import ObservationList from '$lib/components/ObservationList.svelte';
 	import ObservationForm from '$lib/components/ui/form/ObservationForm.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
@@ -23,65 +21,9 @@
 	<section class="panel list-panel">
 		<div class="section-heading">
 			<h2>Observações cadastradas</h2>
-			<span>{data.observations.length} registro(s)</span>
 		</div>
 
-		{#if data.observations.length === 0}
-			<p class="empty-state">Nenhuma observação cadastrada.</p>
-		{:else}
-			<div class="observation-list">
-				{#each data.observations as observation (observation.id)}
-					<article class="observation-row">
-						<header>
-							<div>
-								<strong>Observação #{observation.id}</strong>
-								<span>Indicador #{observation.indicatorId}</span>
-							</div>
-							<RecordActions
-								updateFormId={`observation-${observation.id}`}
-								deleteId={observation.id}
-							/>
-						</header>
-
-						<form
-							method="POST"
-							action="?/update"
-							class="row-form"
-							id={`observation-${observation.id}`}
-						>
-							<input type="hidden" name="id" value={observation.id} />
-							<label>
-								<span>Indicador</span>
-								<Input
-									name="indicator_id"
-									type="number"
-									min="1"
-									value={observation.indicatorId}
-									required
-								/>
-							</label>
-							<label>
-								<span>Valor</span>
-								<Input name="value" type="number" step="any" value={observation.value} required />
-							</label>
-							<label>
-								<span>Data</span>
-								<Input name="date" type="date" value={observation.date} required />
-							</label>
-							<label class="position-field">
-								<span>Posição GeoJSON</span>
-								<Textarea
-									name="position"
-									value={observation.positionText}
-									required
-									class="geojson-input"
-								/>
-							</label>
-						</form>
-					</article>
-				{/each}
-			</div>
-		{/if}
+		<ObservationList observations={data.observations} />
 	</section>
 </div>
 
@@ -97,8 +39,7 @@
 	}
 
 	.page-header,
-	.section-heading,
-	.observation-row header {
+	.section-heading {
 		display: flex;
 		justify-content: space-between;
 		gap: 12px;
@@ -116,10 +57,7 @@
 		margin: 0;
 	}
 
-	.page-description,
-	.empty-state,
-	.section-heading span,
-	.observation-row span {
+	.page-description {
 		font-size: 0.875rem;
 		color: var(--muted-foreground);
 		margin: 0;
@@ -139,51 +77,6 @@
 		font-size: 1rem;
 		font-weight: 600;
 		margin: 0;
-	}
-
-	.row-form {
-		display: grid;
-		gap: 12px;
-		align-items: end;
-		grid-template-columns: minmax(120px, 160px) minmax(120px, 160px) minmax(140px, 180px) 1fr;
-	}
-
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		font-size: 0.8125rem;
-		color: var(--muted-foreground);
-	}
-
-	.position-field {
-		min-width: 260px;
-	}
-
-	:global(.geojson-input) {
-		min-height: 96px;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-		font-size: 0.8125rem;
-	}
-
-	.observation-list {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.observation-row {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		border: 1px solid var(--border);
-		border-radius: 8px;
-		padding: 14px;
-	}
-
-	.observation-row strong,
-	.observation-row span {
-		display: block;
 	}
 
 	.success-message,
@@ -206,14 +99,6 @@
 	@media (max-width: 920px) {
 		.page-container {
 			padding: 20px;
-		}
-
-		.row-form {
-			grid-template-columns: 1fr;
-		}
-
-		.observation-row header {
-			flex-direction: column;
 		}
 	}
 </style>

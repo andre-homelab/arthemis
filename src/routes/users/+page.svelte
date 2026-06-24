@@ -1,16 +1,9 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input/index.js';
-	import RecordActions from '$lib/components/RecordActions.svelte';
 	import UserForm from '$lib/components/ui/form/UserForm.svelte';
+	import UserList from '$lib/components/UserList.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-
-	const roles = [
-		{ value: 'admin', label: 'Administrador' },
-		{ value: 'manager', label: 'Gerente' },
-		{ value: 'visitor', label: 'Visitante' }
-	] as const;
 </script>
 
 <div class="page-container">
@@ -30,72 +23,9 @@
 	<section class="panel list-panel">
 		<div class="section-heading">
 			<h2>Usuários cadastrados</h2>
-			<span>{data.users.length} registro(s)</span>
 		</div>
 
-		{#if data.users.length === 0}
-			<p class="empty-state">Nenhum usuário cadastrado.</p>
-		{:else}
-			<div class="table-wrap">
-				<table>
-					<thead>
-						<tr>
-							<th>Usuário</th>
-							<th>Dados</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each data.users as user (user.id)}
-							<tr>
-								<td>
-									<strong>{user.username}</strong>
-									<span>{user.id}</span>
-								</td>
-								<td>
-									<form method="POST" action="?/update" class="row-form" id={`user-${user.id}`}>
-										<input type="hidden" name="id" value={user.id} />
-										<label>
-											<span>Organização</span>
-											<select name="proponent_id" required value={user.proponentId}>
-												{#each data.proponents as proponent (proponent.id)}
-													<option value={proponent.id}>{proponent.name}</option>
-												{/each}
-											</select>
-										</label>
-										<label>
-											<span>Usuário</span>
-											<Input name="username" value={user.username} required maxlength={150} />
-										</label>
-										<label>
-											<span>E-mail</span>
-											<Input
-												name="email"
-												type="email"
-												value={user.email}
-												required
-												maxlength={150}
-											/>
-										</label>
-										<label>
-											<span>Perfil</span>
-											<select name="role" required value={user.role}>
-												{#each roles as role (role.value)}
-													<option value={role.value}>{role.label}</option>
-												{/each}
-											</select>
-										</label>
-									</form>
-								</td>
-								<td class="actions-cell">
-									<RecordActions updateFormId={`user-${user.id}`} deleteId={user.id} />
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
+		<UserList users={data.users} proponents={data.proponents} />
 	</section>
 </div>
 
@@ -129,18 +59,10 @@
 		margin: 0;
 	}
 
-	.page-description,
-	.empty-state,
-	.section-heading span,
-	td span {
+	.page-description {
 		font-size: 0.875rem;
 		color: var(--muted-foreground);
 		margin: 0;
-	}
-
-	td strong,
-	td span {
-		display: block;
 	}
 
 	.panel {
@@ -157,60 +79,6 @@
 		font-size: 1rem;
 		font-weight: 600;
 		margin: 0;
-	}
-
-	.row-form {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(140px, 1fr));
-		gap: 10px;
-	}
-
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		font-size: 0.8125rem;
-		color: var(--muted-foreground);
-	}
-
-	select {
-		height: 36px;
-		width: 100%;
-		border: 1px solid transparent;
-		border-radius: 18px;
-		background: color-mix(in srgb, var(--foreground) 6%, transparent);
-		color: var(--foreground);
-		padding: 0 12px;
-	}
-
-	.table-wrap {
-		overflow-x: auto;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		padding: 10px 8px;
-		border-bottom: 1px solid var(--border);
-		text-align: left;
-		vertical-align: bottom;
-	}
-
-	th {
-		font-size: 0.75rem;
-		color: var(--muted-foreground);
-		font-weight: 600;
-	}
-
-	.actions-cell {
-		width: 158px;
-		min-width: 158px;
-		white-space: nowrap;
-		vertical-align: middle;
 	}
 
 	.success-message,
@@ -233,10 +101,6 @@
 	@media (max-width: 900px) {
 		.page-container {
 			padding: 20px;
-		}
-
-		.row-form {
-			grid-template-columns: 1fr;
 		}
 	}
 </style>

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input/index.js';
-	import RecordActions from '$lib/components/RecordActions.svelte';
 	import ProponentForm from '$lib/components/ui/form/ProponentForm.svelte';
+	import OrganizationList from '$lib/components/OrganizationList.svelte';
 	import type { ActionData, PageData } from './$types.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -22,56 +21,9 @@
 	<section class="panel list-panel">
 		<div class="section-heading">
 			<h2>Organizações cadastradas</h2>
-			<span>{data.organizations.length} registro(s)</span>
 		</div>
 
-		{#if data.organizations.length === 0}
-			<p class="empty-state">Nenhuma organização cadastrada.</p>
-		{:else}
-			<div class="table-wrap">
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Nome</th>
-							<th>E-mail</th>
-							<th>Ações</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each data.organizations as organization (organization.id)}
-							<tr>
-								<td>{organization.id}</td>
-								<td colspan="2">
-									<form
-										method="POST"
-										action="?/update"
-										class="row-form"
-										id={`organization-${organization.id}`}
-									>
-										<input type="hidden" name="id" value={organization.id} />
-										<Input name="name" value={organization.name} required maxlength={150} />
-										<Input
-											name="email"
-											type="email"
-											value={organization.email}
-											required
-											maxlength={150}
-										/>
-									</form>
-								</td>
-								<td class="actions-cell">
-									<RecordActions
-										updateFormId={`organization-${organization.id}`}
-										deleteId={organization.id}
-									/>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
+		<OrganizationList organizations={data.organizations} />
 	</section>
 </div>
 
@@ -105,9 +57,7 @@
 		margin: 0;
 	}
 
-	.page-description,
-	.empty-state,
-	.section-heading span {
+	.page-description {
 		font-size: 0.875rem;
 		color: var(--muted-foreground);
 		margin: 0;
@@ -127,43 +77,6 @@
 		font-size: 1rem;
 		font-weight: 600;
 		margin: 0;
-	}
-
-	.row-form {
-		display: grid;
-		grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr);
-		gap: 12px;
-		align-items: center;
-	}
-
-	.table-wrap {
-		overflow-x: auto;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		padding: 10px 8px;
-		border-bottom: 1px solid var(--border);
-		text-align: left;
-		vertical-align: bottom;
-	}
-
-	th {
-		font-size: 0.75rem;
-		color: var(--muted-foreground);
-		font-weight: 600;
-	}
-
-	.actions-cell {
-		width: 158px;
-		min-width: 158px;
-		white-space: nowrap;
-		vertical-align: middle;
 	}
 
 	.success-message,
@@ -186,10 +99,6 @@
 	@media (max-width: 760px) {
 		.page-container {
 			padding: 20px;
-		}
-
-		.row-form {
-			grid-template-columns: 1fr;
 		}
 	}
 </style>
