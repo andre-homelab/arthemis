@@ -25,8 +25,29 @@ export const locationSchema = z.object({
 	ecosystem: z.string().min(2, 'Ecossistema é obrigatório'),
 	extent_ha: z.number().min(0.01, 'A extensão deve ser maior que zero'),
 	country: z.string().min(2, 'País é obrigatório'),
-	position: z.string().min(2, 'Posição é obrigatório')
+	position: z.preprocess(
+		(value) => {
+			if (typeof value === 'string') {
+				try { 
+					return JSON.parse(value); 
+				} catch { 
+					return null; 
+				}
+			}
+			return value;
+		},
+		z.any().refine(
+			(value) => {
+				if (!value || typeof value !== 'object') return false;
+				if (typeof value.type !== 'string') return false;
+				if (!Array.isArray(value.coordinates)) return false;
+				return true;
+			},
+			{ message: 'O arquivo deve ser um GeoJSON válido ("type","coordinates")' }
+		)
+	)
 });
+
 
 export const projectProponentSchema = z.object({
    id: z.string(),
@@ -76,7 +97,6 @@ export const projectSchema = z.object({
 		message: 'O projeto deve conter pelo menos um indicador.',
 		path: ['indicators']
 	})
-
 
 	.refine(
 		(data) => {

@@ -32,6 +32,7 @@
 	const form = superForm(data, {
 		validators: zod4Client(projectSchema),
 		dataType: 'json',
+		validationMethod: 'onblur',
 		onResult({ result }) {
 			if (result.type === 'success' ) {
 				toast.success('Projeto cadastrado com sucesso!');
@@ -100,7 +101,7 @@
 	function addLocation() {
 		locationCounter++;
 		$formData.locations = [...$formData.locations, { 
-			id: `l-${locationCounter}`, ecosystem: '', extent_ha: 0, country: '', position: '' 
+			id: `l-${locationCounter}`, ecosystem: '', extent_ha: 0, country: '', position: {}
 		}];
 	}
 
@@ -113,23 +114,39 @@
 		$formData.activities = [...$formData.activities, {
 			id: `a-${activityCounter}`, name: '', description: '', justification: '', location_ids: []
        	}];
-   }
+    }
 
-   function removeActivity(index: number) {
-       $formData.activities = $formData.activities.filter((_, i) => i !== index);
-   }
+	function removeActivity(index: number) {
+		$formData.activities = $formData.activities.filter((_, i) => i !== index);
+	}
 
-   function addIndicator() {
-	   indicatorCounter++;
-       $formData.indicators = [...$formData.indicators, {
-           id: `i-${indicatorCounter}`, location_id: '', activity_id: '', name: '', unit: '',
-           value_baseline: 0, value_reference: 0, observation_method: '', justification: ''
-       }];
-   }
+	function addIndicator() {
+		indicatorCounter++;
+		$formData.indicators = [...$formData.indicators, {
+			id: `i-${indicatorCounter}`, location_id: '', activity_id: '', name: '', unit: '',
+			value_baseline: 0, value_reference: 0, observation_method: '', justification: ''
+		}];
+	}
 
-   function removeIndicator(index: number) {
-       $formData.indicators = $formData.indicators.filter((_, i) => i !== index);
-   }
+	function removeIndicator(index: number) {
+		$formData.indicators = $formData.indicators.filter((_, i) => i !== index);
+	}
+
+	async function handleFileUpload(event: Event, index: number) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0]; 
+		if (!file) return; 
+
+		try {
+			const content = await file.text(); 
+	
+			$formData.locations[index].position = JSON.parse(content);
+		
+			toast.success('Arquivo carregado com sucesso!');
+		} catch (error: unknown) {
+			toast.error('Insira um arquivo JSON');
+		}
+	}
 </script>
 
 <Card.Root class={cn('form-card', className)}>
@@ -349,7 +366,7 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Posição / Coordenadas</Form.Label>
-								<Input {...props} bind:value={$formData.locations[id].position} placeholder="Ex:" class="rounded-md" />
+								<Input onchange={(event) => handleFileUpload(event, id)} type="file" accept=".json" placeholder="Ex:" class="p-0 rounded-md cursor-pointer text-xs text-muted-foreground bg-background file:h-full file:bg-secondary file:text-secondary-foreground file:border-0 file:px-4 file:mr-4 file:hover:bg-secondary/80 file:transition-colors file:items-center" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
@@ -414,10 +431,13 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="text-xs">Localizações da Atividade</Form.Label>
-								
+									<Form.Description class="mb-4 text-xs">
+										Clique sobre uma localização para vinculá-la à atividade.
+									</Form.Description>
+											
 								{#if $formData.locations.length === 0}
 									<div class="p-3 border border-dashed rounded-md bg-muted/50 text-xs text-destructive mt-1">
-										Nenhum local cadastrado. Adicione pelo menos um local na seção de locais primeiro.
+										Nenhuma localização cadastrada. Adicione pelo menos uma localização na seção Localizações do Projeto.
 									</div>
 								{:else}
 									<div class="flex flex-wrap gap-2 mt-1">

@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/private';
+import type { Geometry } from 'geojson';
 
 /**
  * URL base para a API de Autenticação (Arthemis Auth).
@@ -102,7 +103,7 @@ export type CreateLocationInput = {
 	ecosystem: string;
 	country: string;
 	extentHa: number;   
-	position: string;
+	position: Geometry;
 };
 
 export type CreateActivityInput = {
@@ -361,7 +362,7 @@ export async function createLocation(input: CreateLocationInput[], token: string
 			Ecosystem: l.ecosystem,
 			Country: l.country,
 			Extent: l.extentHa,
-			Position: JSON.parse(l.position)
+			Position: l.position
 		})))
 	});
 	
