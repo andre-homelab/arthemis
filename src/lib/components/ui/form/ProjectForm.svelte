@@ -33,6 +33,11 @@
 		validators: zod4Client(projectSchema),
 		dataType: 'json',
 		validationMethod: 'onblur',
+		onUpdated({ form }) {
+        	if (form.valid) {
+				dateRange = { start: undefined, end: undefined };
+        	}
+    	},
 		onResult({ result }) {
 			if (result.type === 'success' ) {
 				toast.success('Projeto cadastrado com sucesso!');
@@ -46,7 +51,7 @@
 		}
 	});
 
-	const { form: formData, enhance, submitting } = form;
+	const { form: formData, enhance, submitting, errors } = form;
 
 	const proponentTriggerContent = $derived(
 		proponents.find((p) => String(p.id) === String($formData.proponent_id))?.name ?? 'Selecione uma Organização'
@@ -141,9 +146,15 @@
 			const content = await file.text(); 
 	
 			$formData.locations[index].position = JSON.parse(content);
-		
+
+			if ($errors.locations?.[index]?.position) {
+				$errors.locations[index].position = undefined;
+			}
+			
 			toast.success('Arquivo carregado com sucesso!');
 		} catch (error: unknown) {
+			target.value = '';
+			$formData.locations[index].position = undefined;
 			toast.error('Insira um arquivo JSON');
 		}
 	}

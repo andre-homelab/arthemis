@@ -43,7 +43,7 @@ export const locationSchema = z.object({
 				if (!Array.isArray(value.coordinates)) return false;
 				return true;
 			},
-			{ message: 'O arquivo deve ser um GeoJSON válido ("type","coordinates")' }
+			{ message: 'O arquivo deve ser um JSON válido'}
 		)
 	)
 });
