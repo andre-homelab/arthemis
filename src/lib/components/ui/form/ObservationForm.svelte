@@ -19,7 +19,7 @@
 		indicators,
 		title = 'Observação',
 		description = 'Insira os dados da observação.',
-		submitLabel = 'Salvar',
+		submitLabel = 'Cadastrar Observação',
 		action = '?/create',
 		class: className
 	}: ObservationProps & { action?: string } = $props();
@@ -130,19 +130,21 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Data</Form.Label>
-						<Calendar
-							type="single"
-							bind:value={selectedDate}
-							class="rounded-md border shadow-sm"
-							captionLayout="dropdown"
-							locale="pt-BR"
-							maxValue={today(getLocalTimeZone())}
-						/>
-						{#if selectedDate}
-							<p class="date-summary">
-								{selectedDate.toDate(getLocalTimeZone()).toLocaleDateString('pt-BR')}
-							</p>
-						{/if}
+						<div class="date-picker-section">
+							<Calendar
+								type="single"
+								bind:value={selectedDate}
+								class="observation-calendar rounded-md border shadow-sm"
+								captionLayout="dropdown"
+								locale="pt-BR"
+								maxValue={today(getLocalTimeZone())}
+							/>
+							{#if selectedDate}
+								<p class="date-summary">
+									{selectedDate.toDate(getLocalTimeZone()).toLocaleDateString('pt-BR')}
+								</p>
+							{/if}
+						</div>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
@@ -181,6 +183,19 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
+	}
+
+	.date-picker-section {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+
+	:global(.observation-calendar) {
+		align-self: flex-start;
+		max-width: 100%;
 	}
 
 	:global(.form-footer) {
