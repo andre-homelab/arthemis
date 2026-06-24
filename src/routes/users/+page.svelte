@@ -38,6 +38,7 @@
 		gap: 24px;
 		width: 100%;
 		max-width: 1180px;
+		margin: 0 auto;
 	}
 
 	.page-header,
