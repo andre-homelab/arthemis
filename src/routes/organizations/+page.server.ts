@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 export const actions: Actions = {
 	create: async (event) => {
-		const token = event.cookies.get('arthemis_token');
+		const token = event.locals.token;
 
 		if (!token) {
 			throw redirect(303, '/login');
@@ -54,7 +54,7 @@ export const actions: Actions = {
 	},
 
 	update: async (event) => {
-		const token = event.cookies.get('arthemis_token');
+		const token = event.locals.token;
 
 		if (!token) {
 			throw redirect(303, '/login');
@@ -80,7 +80,7 @@ export const actions: Actions = {
 	},
 
 	delete: async (event) => {
-		const token = event.cookies.get('arthemis_token');
+		const token = event.locals.token;
 
 		if (!token) {
 			throw redirect(303, '/login');
@@ -101,5 +101,7 @@ export const actions: Actions = {
 				message: error instanceof Error ? error.message : 'Erro ao excluir organização.'
 			});
 		}
+
+		//return { form };
 	}
 };

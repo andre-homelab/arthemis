@@ -99,7 +99,7 @@
 		font-family: var(--font-serif);
 		font-size: 1.75rem !important;
 		font-weight: 700 !important;
-		color: var(--color-sage-green-950) !important;
+		color: var(--sidebar-foreground) !important;
 		letter-spacing: -0.03em;
 		height: auto !important;
 		text-transform: none !important;

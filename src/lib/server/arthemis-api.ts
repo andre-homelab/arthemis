@@ -270,6 +270,30 @@ export async function deleteProponent(id: string, token: string): Promise<boolea
 	}
 
 	return (await response.json()) as boolean;
+
+}
+export async function createProjectProponent(input: CreateProjectProponentInput[], token: string): Promise<number[] | null> {
+	const projectId = input[0].projectId;
+
+	const response = await fetch(`${BRAIN_BASE_URL}/project/${projectId}/add_proponent`, {
+		method: 'POST',
+		headers: { 
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}` 
+		},
+		body: JSON.stringify(input.map(p => ({
+			ProjectID: p.projectId,
+			ProponentID: p.proponentId,
+			Role: p.role
+		})))
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao criar organização do projeto.'));
+	}
+	
+	const projectProponentIds = await response.json();
+	return projectProponentIds;
 }
 
 /**
@@ -297,6 +321,26 @@ export async function listUsers(token: string): Promise<UserRecord[]> {
 	const response = await fetch(`${BRAIN_BASE_URL}/user/`, {
 		headers: { Authorization: `Bearer ${token}` }
 	});
+export async function listSdgs(token?: string): Promise<SdgOption[]> {
+	const response = await fetch(`${BRAIN_BASE_URL}/sdg/`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : undefined
+	});
+
+	if (!response.ok) {
+		return [];
+	}
+
+	const sdgs = (await response.json()) as SdgResponse[];
+
+	return sdgs
+		.map((sdg) => ({
+			id: String(sdg.ID),
+			name: sdg.Name,
+			number: sdg.Number,
+			iconUrl: sdg.IconURL
+		}))
+		.filter((sdg) => sdg.id && sdg.name && sdg.number && sdg.iconUrl);
+}
 
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao listar usuários.'));
@@ -355,7 +399,8 @@ export async function createProject(
 			Name: input.name,
 			Justification: input.justification,
 			LifetimeStart: input.lifetimeStart,
-			LifetimeEnd: input.lifetimeEnd
+			LifetimeEnd: input.lifetimeEnd,
+			SdgIDs: input.sdgIds
 		})
 	});
 
@@ -363,84 +408,75 @@ export async function createProject(
 		throw new Error(await parseError(response, 'Erro ao criar projeto.'));
 	}
 
-	const projectId = await response.json();
-	console.log(projectId);
-	return projectId;
+	const projectId = await response.json(); 	
+	return projectId
 }
 
-export async function createLocation(
-	input: CreateLocationInput,
-	token: string
-): Promise<number | null> {
+export async function createLocation(input: CreateLocationInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
 		method: 'POST',
 		headers: authorizationHeaders(token),
-		body: JSON.stringify({
-			ProjectID: input.projectId,
-			Ecosystem: input.ecosystem,
-			Country: input.country,
-			Extent: input.extentHa,
-			Position: JSON.parse(input.position)
-		})
+		body: JSON.stringify(input.map(l => ({
+			ProjectID: l.projectId,
+			Ecosystem: l.ecosystem,
+			Country: l.country,
+			Extent: l.extentHa,
+			Position: JSON.parse(l.position)
+		})))
 	});
 
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar localização.'));
 	}
 
-	const locationId = await response.json();
-	return locationId;
+	const locationIds = await response.json(); 	
+	return locationIds
 }
 
-export async function createActivity(
-	input: CreateActivityInput,
-	token: string
-): Promise<number | null> {
+export async function createActivity(input: CreateActivityInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/activity/create`, {
 		method: 'POST',
 		headers: authorizationHeaders(token),
-		body: JSON.stringify({
-			ProjectID: input.projectId,
-			Name: input.name,
-			Description: input.description,
-			Justification: input.justification
-		})
+		body: JSON.stringify(input.map(a => ({
+			ProjectID: a.projectId,
+			Name: a.name,
+			Description: a.description,
+			Justification: a.justification,
+			LocationIDs: a.locationIds 
+		})))
 	});
 
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar atividade.'));
 	}
-
-	const activityId = await response.json();
-	return activityId;
+	
+	const activityIds = await response.json(); 	
+	return activityIds;
 }
 
-export async function createIndicator(
-	input: CreateIndicatorInput,
-	token: string
-): Promise<number | null> {
+export async function createIndicator(input: CreateIndicatorInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/indicator/create`, {
 		method: 'POST',
 		headers: authorizationHeaders(token),
-		body: JSON.stringify({
-			ProjectID: input.projectId,
-			LocationID: input.locationId,
-			ActivityID: input.activityId,
-			Name: input.name,
-			Unit: input.unit,
-			ValueBaseline: input.valueBaseline,
-			ValueReference: input.valueReference,
-			ObservationMethod: input.observationMethod,
-			Justification: input.justification
-		})
+		body: JSON.stringify(input.map(i => ({
+			ProjectID: i.projectId,                 
+			LocationID: i.locationId,              
+			ActivityID: i.activityId,             
+			Name: i.name,
+			Unit: i.unit,
+			ValueBaseline: i.valueBaseline,        
+			ValueReference: i.valueReference,    
+			ObservationMethod: i.observationMethod,
+			Justification: i.justification
+		})))
 	});
 
 	if (!response.ok) {
 		throw new Error(await parseError(response, 'Erro ao criar indicador.'));
 	}
 
-	const indicatorId = await response.json();
-	return indicatorId;
+	const indicatorIds = await response.json();
+	return indicatorIds;
 }
 
 export async function createObservations(

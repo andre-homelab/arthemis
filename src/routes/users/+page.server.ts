@@ -22,8 +22,8 @@ function parseProponentId(value: string): number | null {
 	return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('arthemis_token');
+export const load: PageServerLoad = async ({ locals }) => {
+	const token = locals.token;
 
 	if (!token) {
 		throw redirect(303, '/login');

@@ -4,15 +4,14 @@ const activitySchema = z.object({
    id: z.string(),
    name: z.string().min(2, 'Nome da atividade é obrigatório'),
    description: z.string().min(5, 'Descrição é obrigatória'),
-   justification: z.string().min(5, 'Justificativa é obrigatória')
+   justification: z.string().min(5, 'Justificativa é obrigatória'),
+   location_ids: z.array(z.string()).min(1, 'Vincule pelo menos uma localização')
 });
-
 
 const indicatorSchema = z.object({
    id: z.string(),
    location_id: z.string().min(1, 'Vincule a um local'),
    activity_id: z.string().min(1, 'Vincule a uma atividade'),
-  
    name: z.string().min(2, 'Nome é obrigatório'),
    unit: z.string().min(1, 'Unidade é obrigatória'),
    value_baseline: z.number().default(0),
@@ -29,6 +28,12 @@ export const locationSchema = z.object({
 	position: z.string().min(2, 'Posição é obrigatório')
 });
 
+export const projectProponentSchema = z.object({
+   id: z.string(),
+   proponent_id: z.string().min(1, 'Vincule a uma organização'),
+   role: z.string().min(5, 'Função é obrigatório')
+});
+
 export const projectSchema = z.object({
 	// FK para a tabela proponent — uuid do proponente selecionado
 	proponent_id: z.string().min(1, 'Selecione uma organização válida'),
@@ -41,6 +46,8 @@ export const projectSchema = z.object({
 
 	justification: z.string().min(10, 'Justificativa deve ter pelo menos 10 caracteres'),
 
+	project_proponents: z.array(projectProponentSchema).default([]),
+	project_sdgs: z.array(z.string()).default([]),
 	locations: z.array(locationSchema).default([]),
 	activities: z.array(activitySchema).default([]),
    	indicators: z.array(indicatorSchema).default([])
@@ -50,6 +57,11 @@ export const projectSchema = z.object({
 			path: ['lifetime_end']
 	})
 	
+	.refine((data) => data.project_sdgs.length >= 1, {
+		message: 'O projeto deve conter pelo menos um ODS.',
+		path: ['project_sdgs']
+	})
+
 	.refine((data) => data.locations.length >= 1, {
 		message: 'O projeto deve conter pelo menos uma localização.',
 		path: ['locations']
@@ -64,6 +76,7 @@ export const projectSchema = z.object({
 		message: 'O projeto deve conter pelo menos um indicador.',
 		path: ['indicators']
 	})
+
 
 	.refine(
 		(data) => {
