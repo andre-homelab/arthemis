@@ -1,4 +1,5 @@
 import type { PageServerLoad, Actions } from './$types.js';
+import { message } from 'sveltekit-superforms/server';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { userLoginSchema } from '$lib/components/ui/form/UserLoginSchema.js';
@@ -51,10 +52,7 @@ export const actions: Actions = {
 			});
 		} catch (error) {
 			// Captura falhas de autenticação (usuário não encontrado ou senha errada) e retorna 401
-			return fail(401, {
-				form,
-				message: error instanceof Error ? error.message : 'Não foi possível autenticar.'
-			});
+			return message(form, 'Usuário ou senha incorretos. Tente novamente.', { status: 401 });
 		}
 
 		// Redireciona o usuário para a raiz do sistema após a autenticação bem-sucedida

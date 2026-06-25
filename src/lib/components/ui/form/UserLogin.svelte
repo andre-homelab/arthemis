@@ -21,7 +21,7 @@
 		validators: zod4Client(userLoginSchema)
 	});
 
-	const { form: formData, enhance, submitting } = form;
+	const { form: formData, errors, message, enhance, submitting } = form;
 </script>
 
 <Card.Root class={cn('form-card', className)}>
@@ -66,6 +66,13 @@
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
+
+
+			{#if $message}
+				<div class="login-error">
+					⚠️ {typeof $message === 'object' ? $message.text : $message}
+				</div>
+			{/if}
 
 			<Card.Footer class="form-footer">
 				<Button type="submit" disabled={$submitting}>
@@ -132,6 +139,19 @@
 	:global(.form-card input:focus) {
 		border-color: var(--primary) !important;
 		box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent) !important;
+	}
+
+	.login-error {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 14px;
+		border-radius: 8px;
+		background-color: #fef2f2;
+		border: 1px solid #fecaca;
+		color: #b91c1c;
+		font-size: 13px;
+		font-weight: 500;
 	}
 
 	:global(.form-footer) {

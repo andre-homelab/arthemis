@@ -55,7 +55,6 @@
 		width: 100%;
 		max-width: 1000px;
 		height: auto;
-		max-height: 600px;
 		border-radius: 16px;
 		overflow: hidden;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
