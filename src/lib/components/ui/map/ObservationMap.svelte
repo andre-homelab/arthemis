@@ -1,45 +1,69 @@
 <script lang="ts">
-  import { Map, MapMarker, MarkerContent,  MarkerPopup } from '$lib/components/ui/map';
-  import type { Map as MapLibreMap } from 'maplibre-gl';
+  import { onDestroy } from 'svelte';
+  import { Map, MapMarker, MarkerContent, MarkerPopup } from '$lib/components/ui/map';
+  import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
+  import type { Point, Polygon } from 'geojson';
   import type { ObservationMapProps } from '$lib/components/ui/map/types';
 
-  let { projectLocation, indicators }: ObservationMapProps = $props();
+  let { locations, indicators }: ObservationMapProps = $props();
   let mapInstance = $state<MapLibreMap | null>(null);
 
-  let observations = $derived(
-    indicators?.flatMap((indicator) => 
-      indicator.observations.map(obs => ({
-        id: obs.id,
-        name: indicator.name,
-        value: obs.value,
-        unit: indicator.unit,
-        date: obs.date,
-        lng: obs.position.coordinates[0],
-        lat: obs.position.coordinates[1],
-        color: indicator.color
-      }))
-    ) || []
-  );
+  let observations = $derived.by(() => {
+    if (!indicators) return [];
+    
+    return indicators.flatMap(i => {
+      if (!i.observations) return [];
+      
+      return i.observations.map(o => {
+        const coordinates = (o.position as Point)?.coordinates;
+        
+        return {
+          id: o.id,
+          name: i.name,
+          value: o.value,
+          unit: i.unit,
+          date: o.date,
+          lng: coordinates?.[0] ?? 0, 
+          lat: coordinates?.[1] ?? 0,
+          color: i.color
+        };
+      });
+    });
+  });
 
-  let centerLng = $derived(projectLocation.position.coordinates[0][0][0] || 0);
-  let centerLat = $derived(projectLocation.position.coordinates[0][0][1] || 0);
+  let centerLng = $derived.by(() => {
+    const coords = (locations?.[0]?.position as Polygon)?.coordinates;
+    return coords?.[0]?.[0]?.[0] ?? -50.0;
+  });
+
+  let centerLat = $derived.by(() => {
+    const coords = (locations?.[0]?.position as Polygon)?.coordinates;
+    return coords?.[0]?.[0]?.[1] ?? -15.0;
+  });
 
   // Drwas a custom layer; no built-in mapcn-svelte component 
   function drawLocationBoundary() {
     const map = mapInstance;
-    if (!map) return;
+    if (!map || !locations || locations.length === 0) return;
     
-    const sourceName = "boundary";
-
-    if (!map.getSource(sourceName)) {
+    const sourceName = "boundaries";
+    
+    const validLocations = locations.filter(loc => loc?.position?.type);
+    if (!map.getSource(sourceName) && validLocations.length > 0) {
 
       // Adds new GeoJSON polygon to the map instance
       map.addSource(sourceName, { 
         type: "geojson", 
         data: {
-          type: "Feature",
-          properties: {}, // properties can have a name to be displayed for every polygon on hover, for example
-          geometry: projectLocation.position
+          type: "FeatureCollection",
+          features: validLocations.map(loc => ({
+            type: "Feature",
+            properties: {
+              ecosystem: loc.ecosystem,
+              country: loc.country
+            },
+            geometry: loc.position
+          }))
         }
       });
 
@@ -54,7 +78,7 @@
         },
       });
 
-      // Adds a outline to the polygon
+      // Adds an outline to the polygon
       map.addLayer({
         id: "boundary-outline",
         type: "line",
@@ -66,29 +90,56 @@
       });
     }
   }
+
+  $effect(() => {
+    const map = mapInstance;
+    if (!map || !locations) return;
+
+    const source = map.getSource("boundaries") as GeoJSONSource | undefined;
+    if (source && typeof source.setData === 'function') {
+      const validLocations = locations.filter(loc => loc?.position?.type);
+      
+      source.setData({
+        type: "FeatureCollection",
+        features: validLocations.map(loc => ({
+          type: "Feature",
+          properties: { ecosystem: loc.ecosystem, country: loc.country },
+          geometry: loc.position
+        }))
+      });
+    }
+  });
+
+  onDestroy(() => {
+    if (mapInstance) {
+      mapInstance.remove();
+    }
+  });
 </script>
 
-<div class="map-container">  
+<div class="map-container">
   <Map 
     bind:map={mapInstance} 
     onstyleloaded={drawLocationBoundary}
     center={[centerLng, centerLat]} 
-    zoom={12} 
+    zoom={4} 
   >
-    {#each observations as obs (obs.id)}
-      <MapMarker longitude={obs.lng} latitude={obs.lat}>
-        <MarkerContent>
-          <div class="marker-dot" style="background-color: {obs.color};"></div>
-        </MarkerContent>
-        
-        <MarkerPopup>
-          <div class="popup-content">
-            <p class="popup-title">{obs.name}</p>
-            <p class="popup-value">{obs.value} {obs.unit}</p>
-            <p class="popup-date">{obs.date}</p>
-          </div>
-        </MarkerPopup>
-      </MapMarker>
+    {#each observations as o (o.id)}
+      {#if o.lng !== 0 && o.lat !== 0}
+        <MapMarker longitude={o.lng} latitude={o.lat}>
+          <MarkerContent>
+            <div class="marker-dot" style="background-color: {o.color};"></div>
+          </MarkerContent>
+          
+          <MarkerPopup>
+            <div class="popup-content">
+              <p class="popup-title">{o.name}</p>
+              <p class="popup-value">{o.value} {o.unit}</p>
+              <p class="popup-date">{o.date}</p>
+            </div>
+          </MarkerPopup>
+        </MapMarker>
+      {/if}
     {/each}
   </Map>
 </div>
@@ -113,7 +164,7 @@
     cursor: pointer;
     transition: transform 0.1s ease-in-out;
   }
-
+  
   .marker-dot:hover {
     transform: scale(1.2);
   }

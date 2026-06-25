@@ -54,15 +54,15 @@ export interface ProjectProponent {
   role: string;
 }
 
+export interface Proponent {
+    id: string;
+    name: string;
+    email: string
+}
+
 export interface Sdg {
   id: string;
   name: string;
   number: number;
   icon_url: string;
-}
-
-export interface Proponent {
-    id: string;
-    name: string;
-    email: string
 }

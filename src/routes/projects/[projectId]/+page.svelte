@@ -2,185 +2,35 @@
   import LineChart from '$lib/components/ui/chart/LineChart.svelte';
   import ObservationMap from '$lib/components/ui/map/ObservationMap.svelte';
   import * as Select from "$lib/components/ui/select/index.js";
-  import type {  Project } from '$lib/components/ui/map/types';
 	import { SvelteMap } from 'svelte/reactivity';
+	import type { PageData } from './$types';
+  import type { Project } from '$lib/types';
+  import type { ChartDataPoint, MapIndicator } from '$lib/components/ui/map/types.js'
 
-  const mockProjectDetails: Project = {
-    id: "smh-2",
-    name: "Atlantic Forest Reforestation",
-    lifetime_start: "2024-01-01",
-    lifetime_end: "2030-12-31",
-    location: {
-      id: "sh2fwe",
-      ecosystem: "Atlantic Forest",
-      extent_ha: 150.5,
-      country: "Brazil",
-      position: {
-        type: "Polygon",
-        coordinates: [[
-          [-52.38, -24.05],
-          [-52.38, -24.01],
-          [-52.32, -24.01],
-          [-52.32, -24.05],
-          [-52.38, -24.05]
-        ]]
-      }
-    },
-    activities: [
-      {
-        id: "hash:P",
-        name: "Native Seedling Planting",
-        indicators: [
-          {
-            id: "urgnd",
-            name: "Seedlings Planted",
-            unit: "units",
-            observations: [
-              { id: "obs-1", date: "2024-05-10", value: 120, position: { type: "Point", coordinates: [-52.380, -24.050] } },
-              { id: "obs-2", date: "2024-06-10", value: 340, position: { type: "Point", coordinates: [-52.375, -24.045] } },
-            ]
-          },
-          {
-            id: "surv-rate",
-            name: "Survival Rate",
-            unit: "%",
-            observations: [
-              { id: "sr-1", date: "2024-05-10", value: 91, position: { type: "Point", coordinates: [-52.370, -24.040] } },
-              { id: "sr-2", date: "2024-06-10", value: 87, position: { type: "Point", coordinates: [-52.365, -24.035] } },
-            ]
-          },
-          {
-            id: "canopy-cov",
-            name: "Canopy Coverage",
-            unit: "%",
-            observations: [
-              { id: "cc-1", date: "2024-05-10", value: 12, position: { type: "Point", coordinates: [-52.360, -24.030] } },
-              { id: "cc-2", date: "2024-06-10", value: 18, position: { type: "Point", coordinates: [-52.355, -24.025] } },
-            ]
-          },
-          {
-            id: "avg-height",
-            name: "Average Seedling Height",
-            unit: "cm",
-            observations: [
-              { id: "ah-1", date: "2024-05-10", value: 15, position: { type: "Point", coordinates: [-52.350, -24.020] } },
-              { id: "ah-2", date: "2024-06-10", value: 23, position: { type: "Point", coordinates: [-52.345, -24.015] } },
-            ]
-          }
-        ]
-      },
-      {
-        id: "hahadiery832-io",
-        name: "Water Quality Monitoring",
-        indicators: [
-          {
-            id: "u-shube-cds",
-            name: "pH Levels",
-            unit: "pH",
-            observations: [
-              { id: "ph-1", date: "2024-06-01", value: 7.2, position: { type: "Point", coordinates: [-52.340, -24.050] } },
-              { id: "ph-2", date: "2024-07-01", value: 6.8, position: { type: "Point", coordinates: [-52.335, -24.045] } },
-            ]
-          },
-          {
-            id: "arhfi3",
-            name: "Temperature",
-            unit: "°C",
-            observations: [
-              { id: "tmp-1", date: "2024-06-01", value: 18, position: { type: "Point", coordinates: [-52.330, -24.040] } },
-              { id: "tmp-2", date: "2024-07-01", value: 22, position: { type: "Point", coordinates: [-52.325, -24.035] } },
-            ]
-          },
-          {
-            id: "turb-01",
-            name: "Turbidity",
-            unit: "NTU",
-            observations: [
-              { id: "trb-1", date: "2024-06-01", value: 3.1, position: { type: "Point", coordinates: [-52.380, -24.030] } },
-              { id: "trb-2", date: "2024-07-01", value: 4.5, position: { type: "Point", coordinates: [-52.375, -24.025] } },
-            ]
-          },
-          {
-            id: "dissolved-o2",
-            name: "Dissolved Oxygen",
-            unit: "mg/L",
-            observations: [
-              { id: "do-1", date: "2024-06-01", value: 8.4, position: { type: "Point", coordinates: [-52.370, -24.020] } },
-              { id: "do-2", date: "2024-07-01", value: 7.9, position: { type: "Point", coordinates: [-52.365, -24.015] } },
-            ]
-          }
-        ]
-      },
-      {
-        id: "soil-mon-03",
-        name: "Soil Health Monitoring",
-        indicators: [
-          {
-            id: "soil-org",
-            name: "Organic Matter",
-            unit: "%",
-            observations: [
-              { id: "som-1", date: "2024-04-01", value: 2.1, position: { type: "Point", coordinates: [-52.360, -24.050] } },
-              { id: "som-2", date: "2024-07-01", value: 2.8, position: { type: "Point", coordinates: [-52.355, -24.045] } },
-            ]
-          },
-          {
-            id: "soil-moist",
-            name: "Soil Moisture",
-            unit: "%",
-            observations: [
-              { id: "smo-1", date: "2024-04-01", value: 38, position: { type: "Point", coordinates: [-52.350, -24.040] } },
-              { id: "smo-2", date: "2024-07-01", value: 55, position: { type: "Point", coordinates: [-52.345, -24.035] } },
-            ]
-          },
-          {
-            id: "soil-nitrogen",
-            name: "Nitrogen Content",
-            unit: "mg/kg",
-            observations: [
-              { id: "nit-1", date: "2024-04-01", value: 142, position: { type: "Point", coordinates: [-52.340, -24.030] } },
-              { id: "nit-2", date: "2024-07-01", value: 178, position: { type: "Point", coordinates: [-52.335, -24.025] } },
-            ]
-          },
-          {
-            id: "soil-ph",
-            name: "Soil pH",
-            unit: "pH",
-            observations: [
-              { id: "sph-1", date: "2024-04-01", value: 5.8, position: { type: "Point", coordinates: [-52.330, -24.020] } },
-              { id: "sph-2", date: "2024-07-01", value: 6.1, position: { type: "Point", coordinates: [-52.325, -24.015] } },
-            ]
-          }
-        ]
-      }
-    ]
-  };
+	let { data }: { data: PageData } = $props();
+  
+  const project = $derived(data.project as Project);
 
-  const project = mockProjectDetails;
-
-  let selectedActivityName = $state("");
-
-  const selectedActivity = $derived(
-    project.activities.find(
-      (activity) => activity.name === selectedActivityName
-    )
+  const projectArea =  $derived(
+    project.locations?.reduce((sum, l) => sum + (Number(l.extent_ha)), 0) || 0
   );
 
-  function generateColor(index: number) {
-    const baseHue = 120; // green
-    const hueShift = 45;
-    const newHue = (baseHue + (index * hueShift)) % 360;
+  const projectLocations = $derived(
+    Array.from(new Set(project.locations?.map(l => `${l.country} (${l.ecosystem})`))).join('; ')
+  );
 
-    return `hsl(${newHue}, 70%, 45%)`
-  }
+  let selectedActivityId = $state("");
+  const selectedActivity = $derived(
+    project.activities?.find(a => String(a.id) === selectedActivityId) || project.activities?.[0]
+  );
 
-  const indicators = $derived(
-    selectedActivity?.indicators.map((indicator, index) => ({
+  const indicators = $derived<MapIndicator[]>((selectedActivity?.indicators || []).map((indicator, index) => ({
       ...indicator,
+      id: String(indicator.id),
       color: generateColor(index)
     }))
-  )
-
+  );
+  
   const chartEntries = $derived(
     indicators?.map((indicator) => ({
       key: indicator.id,
@@ -188,47 +38,64 @@
       color: indicator.color
     }))
   );
-
-  interface ChartDataPoint {
-    date: Date;
-    [key: string]: number | Date;
-  };
-
+  
   const chartData = $derived.by(() => {
     if (!selectedActivity) return [];
 
-    const data = new SvelteMap<string, ChartDataPoint>();
-
+    const map = new SvelteMap<string, ChartDataPoint>();
+    
     indicators?.forEach(({ id, observations }) => {
-      observations.forEach((obs) => {
-        if (!data.has(obs.date)) {
-          data.set(obs.date, { date: new Date(`${obs.date}T12:00:00`) });
+      observations?.forEach((o) => {
+        const dateKey = String(o.date)
+
+        if (!map.has(dateKey)) {
+          map.set(dateKey, { date: new Date(dateKey) });
         }
-        data.get(obs.date)![id] = obs.value;
+
+        map.get(dateKey)![id] = o.value;
       });
     });
-
-    return Array.from(data.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+    
+    return Array.from(map.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
   });
+  
+  function generateColor(index: number) {
+    const baseHue = 120; // green
+    const hueShift = 45;
+    const newHue = (baseHue + (index * hueShift)) % 360;
+  
+    return `hsl(${newHue}, 70%, 45%)`
+  }
 </script>
 
 <div class="page-wrapper pt-8 pb-8 px-6">
   <header class="page-header">
     <h1 class="project-title">{project.name}</h1>
     <div class="project-info">
-      <p><strong>Duration:</strong> {project.lifetime_start} to {project.lifetime_end}</p>
-      <p><strong>Location:</strong> {project.location.country} ({project.location.ecosystem})</p>
-      <p><strong>Area:</strong> {project.location.extent_ha} ha</p>
+      <p><strong>Duração:</strong>
+        {new Date(project.lifetime_start).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} 
+        até 
+        {new Date(project.lifetime_end).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+      </p>
+      <p><strong>Localização:</strong> {projectLocations}</p>
+      <p><strong>Área Total:</strong> {projectArea} ha</p>
+    </div>
+
+    <div class="sdg-container">
+      {#each project.project_sdgs as s (s.id)}
+        <img src={s.icon_url} alt={s.name} title={s.name} class="sdg-icon" />
+      {/each}'
     </div>
   </header>
-
+  
   <div class="activity-card">
-    <Select.Root type="single" name="selectedActivity" bind:value={selectedActivityName}>
+    <Select.Root type="single" name="selectedActivity" bind:value={selectedActivityId}>
+      Atividade
       <Select.Trigger class="rounded-md w-[40%]">
-        {#if selectedActivityName} 
-          {selectedActivityName} 
+        {#if selectedActivity} 
+          {selectedActivity.name} 
         {:else} 
-          Select an activity
+          Selecione uma atividade
         {/if}
       </Select.Trigger>
       <Select.Content class="rounded-md">
@@ -245,20 +112,20 @@
     {#if selectedActivity}
       <div class="chart-wrapper">
         <LineChart
-          title="Activity Evolution"
-          description="Observations over time for {selectedActivity.name}"
+          title="Evolução das Atividades"
+          description="Observations pelo tempo para {selectedActivity.name}"
           data={chartData}
-          series={chartEntries!}
+          series={chartEntries}
           class="line-card"
           dotted={true}
         />
       </div>
-
+    
       <div class="map-wrapper">
         <h2 class="map-title">Observation Map</h2>
-        <ObservationMap projectLocation={project.location} indicators={indicators}/>
-      </div>
-    {/if}
+        <ObservationMap locations={project.locations} indicators={indicators}/>
+      </div> 
+    {/if} 
   </div>
 </div>
 
@@ -292,6 +159,22 @@
 
   .project-info p {
     margin: 0;
+  }
+
+  .sdg-container {
+    display: flex; 
+    gap: 0.75rem; 
+    margin-top: 1rem;
+    flex-wrap: wrap; 
+  }
+
+  .sdg-icon {
+    width: 6rem; 
+    height: auto; 
+    object-fit: cover;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
   }
 
   .activity-card {
