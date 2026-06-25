@@ -137,7 +137,6 @@
   .map-container {
     height: 500px; 
     width: 100%; 
-    border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     overflow: hidden;
     position: relative;
