@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/private';
+import type { Project } from '$lib/types';
 import type { Geometry } from 'geojson';
 
 /**
@@ -51,6 +52,64 @@ type SdgResponse = {
 	Name: string;
 	Number: number;
 	IconURL: string;
+};
+
+export type ProjectProponentResponse = {
+    ID: number;
+    ProponentID: number;
+    ProjectID: number;
+    Role: string;
+};
+
+export type LocationResponse = {
+    ID: number;
+    Ecosystem: string;
+    Extent: number;
+    Country: string;
+    Position: Geometry;
+};
+
+export type ObservationResponse = {
+    ID: number;
+	IndicatorID: number,
+    Value: number;
+    Date: string;
+    Position: Geometry;
+};
+
+export type IndicatorResponse = {
+    ID: number;
+	ActivityID: number;
+    LocationID: number;
+    Name: string;
+    Unit: string;
+	ValueBaseline: number;
+    ValueReference: number;
+    ObservationMethod: string;
+    Justification: string;
+    Observations?: ObservationResponse[];
+};
+
+export type ActivityResponse = {
+    ID: number;
+	ProjectID: number;
+    Name: string;
+	Description: string;
+    Justification: string;
+    Locations?: LocationResponse[];
+    Indicators?: IndicatorResponse[];
+};
+
+export type ProjectResponse = {
+    ID: number;
+    Name: string;
+    LifetimeStart: string; 
+    LifetimeEnd: string;
+	Justification: string;
+    Locations?: LocationResponse[];
+    Activities?: ActivityResponse[];
+    ProjectProponents?: ProjectProponentResponse[];
+    ProjectSdgs?: SdgResponse[];
 };
 
 /**
@@ -348,6 +407,79 @@ export async function createProject(input: CreateProjectInput, token: string): P
 
 	const projectId = await response.json(); 	
 	return projectId
+}
+
+export async function getProject(id: number, token: string): Promise<Project | null> {
+	const response = await fetch(`${BRAIN_BASE_URL}/project/${id}`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (!response.ok) {
+		return null;
+	}
+
+	const p = await response.json() as ProjectResponse;
+
+	return {
+        id: String(p.ID),
+        name: p.Name,
+        lifetime_start: p.LifetimeStart,
+        lifetime_end: p.LifetimeEnd,
+        justification: p.Justification,
+        
+        locations: (p.Locations || []).map(l => ({
+            id: String(l.ID),
+            ecosystem: l.Ecosystem,
+            extent_ha: l.Extent,
+            country: l.Country,
+            position: l.Position
+        })),
+
+        project_sdgs: (p.ProjectSdgs || []).map(s => ({
+            id: String(s.ID),
+            name: s.Name,
+            number: s.Number,
+			icon_url: s.IconURL
+        })),
+
+        project_proponents: (p.ProjectProponents || []).map(p => ({
+            id: String(p.ID),
+			project_id: String(p.ProjectID),
+			proponent_id: String(p.ProponentID),
+            role: p.Role,
+        })),
+
+        activities: (p.Activities || []).map(a => ({
+            id: String(a.ID),
+            name: a.Name,
+			description: a.Description,
+            justification: a.Justification,
+            activity_locations: (a.Locations || []).map(l => ({
+                id: String(l.ID),
+                ecosystem: l.Ecosystem,
+                extent_ha: l.Extent, 
+                country: l.Country,
+                position: l.Position
+            })),
+            indicators: (a.Indicators || []).map(i => ({
+                id: String(i.ID),
+                name: i.Name,
+                unit: i.Unit,
+                value_baseline: i.ValueBaseline,
+                value_reference: i.ValueReference,
+                observation_method: i.ObservationMethod,
+                justification: i.Justification,
+                observations: (i.Observations || []).map(o => ({
+                    id: String(o.ID),
+                    date: o.Date,
+                    value: o.Value,
+                    position: o.Position
+                }))
+            }))
+        }))
+    };
 }
 
 export async function createLocation(input: CreateLocationInput[], token: string): Promise<number[] | null> {
