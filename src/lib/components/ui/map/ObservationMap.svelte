@@ -2,43 +2,32 @@
   import { onDestroy } from 'svelte';
   import { Map, MapMarker, MarkerContent, MarkerPopup } from '$lib/components/ui/map';
   import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
-  import type { Point, Polygon } from 'geojson';
+  import type { Polygon } from 'geojson';
   import type { ObservationMapProps } from '$lib/components/ui/map/types';
 
-  let { locations, indicators }: ObservationMapProps = $props();
+  let { locations, observations }: ObservationMapProps = $props();
   let mapInstance = $state<MapLibreMap | null>(null);
 
-  let observations = $derived.by(() => {
-    if (!indicators) return [];
-    
-    return indicators.flatMap(i => {
-      if (!i.observations) return [];
-      
-      return i.observations.map(o => {
-        const coordinates = (o.position as Point)?.coordinates;
-        
-        return {
-          id: o.id,
-          name: i.name,
-          value: o.value,
-          unit: i.unit,
-          date: o.date,
-          lng: coordinates?.[0] ?? 0, 
-          lat: coordinates?.[1] ?? 0,
-          color: i.color
-        };
-      });
-    });
-  });
+  let mapCenter = $derived.by<[number, number]>(() => {
+    const ring = (locations?.[0]?.position as Polygon)?.coordinates?.[0];
+    if (!ring || ring.length === 0) return [0.0, 0.0];
 
-  let centerLng = $derived.by(() => {
-    const coords = (locations?.[0]?.position as Polygon)?.coordinates;
-    return coords?.[0]?.[0]?.[0] ?? -50.0;
-  });
+    let minLng = Infinity;
+    let maxLng = -Infinity;
+    let minLat = Infinity;
+    let maxLat = -Infinity;
 
-  let centerLat = $derived.by(() => {
-    const coords = (locations?.[0]?.position as Polygon)?.coordinates;
-    return coords?.[0]?.[0]?.[1] ?? -15.0;
+    for (const [lng, lat] of ring) {
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+
+    return [
+      (minLng + maxLng) / 2,
+      (minLat + maxLat) / 2
+    ];
   });
 
   // Drwas a custom layer; no built-in mapcn-svelte component 
@@ -62,7 +51,7 @@
               ecosystem: loc.ecosystem,
               country: loc.country
             },
-            geometry: loc.position
+            geometry: structuredClone(loc.position)
           }))
         }
       });
@@ -104,7 +93,7 @@
         features: validLocations.map(loc => ({
           type: "Feature",
           properties: { ecosystem: loc.ecosystem, country: loc.country },
-          geometry: loc.position
+          geometry: structuredClone(loc.position)
         }))
       });
     }
@@ -121,8 +110,8 @@
   <Map 
     bind:map={mapInstance} 
     onstyleloaded={drawLocationBoundary}
-    center={[centerLng, centerLat]} 
-    zoom={4} 
+    center={mapCenter} 
+    zoom={6} 
   >
     {#each observations as o (o.id)}
       {#if o.lng !== 0 && o.lat !== 0}
@@ -135,7 +124,7 @@
             <div class="popup-content">
               <p class="popup-title">{o.name}</p>
               <p class="popup-value">{o.value} {o.unit}</p>
-              <p class="popup-date">{o.date}</p>
+              <p class="popup-date">{new Date(o.date).toLocaleDateString('pt-BR')}</p>
             </div>
           </MarkerPopup>
         </MapMarker>

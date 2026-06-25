@@ -6,6 +6,7 @@
 	import type { PageData } from './$types';
   import type { Project } from '$lib/types';
   import type { ChartDataPoint, MapIndicator } from '$lib/components/ui/map/types.js'
+	import type { Point } from 'geojson';
 
 	let { data }: { data: PageData } = $props();
   
@@ -30,6 +31,30 @@
       color: generateColor(index)
     }))
   );
+
+  let observations = $derived.by(() => {
+    if (!indicators) return [];
+    
+    return indicators.flatMap(i => {
+      if (!i.observations) return [];
+      
+      return i.observations.map(o => {
+        const coordinates = structuredClone((o.position as Point)?.coordinates);        
+        
+        return {
+          id: String(o.id),
+          name: i.name,
+          value: o.value,
+          unit: i.unit,
+          date: o.date,
+          position: o.position,
+          lng: coordinates?.[0] ?? 0, 
+          lat: coordinates?.[1] ?? 0,
+          color: i.color
+        };
+      });
+    });
+  });
   
   const chartEntries = $derived(
     indicators?.map((indicator) => ({
@@ -84,7 +109,7 @@
     <div class="sdg-container">
       {#each project.project_sdgs as s (s.id)}
         <img src={s.icon_url} alt={s.name} title={s.name} class="sdg-icon" />
-      {/each}'
+      {/each}
     </div>
   </header>
   
@@ -101,7 +126,7 @@
       <Select.Content class="rounded-md">
         <Select.Group>
           {#each project.activities as activity (activity.id)}
-            <Select.Item value={activity.name} label={activity.name}>
+            <Select.Item value={String(activity.id)} label={activity.name}>
               {activity.name}
             </Select.Item>
           {/each}
@@ -123,7 +148,7 @@
     
       <div class="map-wrapper">
         <h2 class="map-title">Observation Map</h2>
-        <ObservationMap locations={project.locations} indicators={indicators}/>
+        <ObservationMap locations={selectedActivity.activity_locations} observations={observations}/>
       </div> 
     {/if} 
   </div>

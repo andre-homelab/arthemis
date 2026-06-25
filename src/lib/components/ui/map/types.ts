@@ -1,4 +1,4 @@
-import type { Indicator, Location } from "$lib/types";
+import type { Indicator, Location, Observation } from "$lib/types";
 
 export interface ChartDataPoint {
   date: Date;
@@ -9,7 +9,15 @@ export interface MapIndicator extends Indicator {
   color: string;
 }
 
+export interface MapObservation extends Observation {
+  name: string;
+  unit: string;
+  lng: number;
+  lat: number;  
+  color: string;
+}
+
 export interface ObservationMapProps {
     locations: Location[];
-    indicators?: MapIndicator[];
+    observations?: MapObservation[];
   }
