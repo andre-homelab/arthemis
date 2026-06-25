@@ -17,8 +17,9 @@
 		title = 'Novo Usuário',
 		description = 'Preencha os dados do usuário.',
 		submitLabel = 'Cadastrar Usuário',
+		action = '?/create',
 		class: className
-	}: UserFormProps = $props();
+	}: UserFormProps & { action?: string } = $props();
 
 	const form = superForm(data, {
 		validators: zod4Client(userSchema),
@@ -61,7 +62,7 @@
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" use:enhance class="form-body">
+		<form method="POST" {action} use:enhance class="form-body">
 			<Form.Field {form} name="proponent_id">
 				<Form.Control>
 					{#snippet children({ props })}

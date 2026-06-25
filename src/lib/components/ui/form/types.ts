@@ -94,10 +94,19 @@ export interface UserLoginProps {
 	class?: string;
 }
 
+export interface IndicatorOption {
+	/** Identificador único convertido para string. */
+	id: string;
+	/** Nome de exibição do indicador. */
+	name: string;
+}
+
 // Props para os componentes do formulário das Observações
 export interface ObservationProps {
 	// Dados do formulário vindos do load() via superValidate
 	data: SuperValidated<Infer<ObservationSchema>>;
+	// Lista de indicadores para o campo de seleção
+	indicators: IndicatorOption[];
 	// Título exibido no card do formulário
 	title?: string;
 	// Subtítulo/descrição exibida abaixo do título

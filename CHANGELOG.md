@@ -1,4 +1,5 @@
 # CHANGELOG
+
 ## CREATE
 
 - Criada Página de Detalhamento de Projeto - https://github.com/andre-homelab/arthemis/issues/19 - Tudo Feito
@@ -9,6 +10,9 @@
 - Criada conexão com o banco de dados e suas APIs para o login do usuário - https://github.com/andre-homelab/arthemis/issues/34 - Tudo Feito
 - Corrigido comportanto do scroll em páginas com conteúdo que ultrapassa a altura da tela - https://github.com/andre-homelab/arthemis/issues/30
 - Adicianos os campos Localizações, Atividades e Indicadores na página de cadastro de projeto - https://github.com/andre-homelab/arthemis/issues/31 - Tudo feito
+- Criada página de cadastro de observações - https://github.com/andre-homelab/arthemis/issues/38 - Tudo Feito
+- Adicionado CRUD nas página de organizações, usuários e observações - https://github.com/andre-homelab/arthemis/issues/40- Tudo Feito
+- Criada página de listagem geral - https://github.com/andre-homelab/arthemis/issues/44 - Tudo Feito
 
 ## UPDATE
 
