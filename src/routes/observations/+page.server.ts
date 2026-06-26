@@ -25,8 +25,8 @@ function parsePosition(value: string): unknown {
 	return JSON.parse(value);
 }
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('arthemis_token');
+export const load: PageServerLoad = async ({ locals }) => {
+	const token = locals.token;
 
 	if (!token) {
 		throw redirect(303, '/login');
@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 export const actions: Actions = {
 	create: async (event) => {
-		const token = event.cookies.get('arthemis_token');
+		const token = event.locals.token;
 
 		if (!token) {
 			throw redirect(303, '/login');
@@ -86,20 +86,26 @@ export const actions: Actions = {
 	},
 
 	update: async (event) => {
-		const token = event.cookies.get('arthemis_token');
-
-		if (!token) {
-			throw redirect(303, '/login');
-		}
+		const token = event.locals.token;
 
 		const data = await event.request.formData();
 		const id = requiredString(data, 'id');
 		const indicatorId = parsePositiveNumber(requiredString(data, 'indicator_id'));
 		const value = Number(requiredString(data, 'value'));
 		const dateValue = requiredString(data, 'date');
-		const positionText = requiredString(data, 'position');
 
-		if (!id || !indicatorId || !Number.isFinite(value) || !dateValue || !positionText) {
+		const positionString = data.get('position') as string;
+        let positionObject = null;
+        
+        try {
+            if (positionString && positionString.trim() !== '') {
+                positionObject = JSON.parse(positionString); // Converte para Objeto
+            }
+        } catch (error) {
+            return fail(400, { message: 'O GeoJSON informado no Textarea é inválido.' });
+        }
+
+		if (!id || !indicatorId || !Number.isFinite(value) || !dateValue) {
 			return fail(400, { message: 'Revise os dados da observação antes de atualizar.' });
 		}
 
@@ -110,7 +116,7 @@ export const actions: Actions = {
 					indicatorId,
 					value,
 					date: new Date(`${dateValue}T12:00:00`),
-					position: parsePosition(positionText)
+					position: positionObject
 				},
 				token
 			);
