@@ -491,6 +491,99 @@ export async function getProject(id: number, token: string): Promise<Project | n
     };
 }
 
+export async function listProjects(token: string): Promise<Project[]> {
+    const response = await fetch(`${BRAIN_BASE_URL}/project/`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        if (response.status === 404) {
+            return [];
+        }
+
+		throw new Error('Erro ao listar projetos.');
+    }
+
+    const projectsData = await response.json() as ProjectResponse[];
+
+    return projectsData.map(p => ({
+        id: String(p.ID),
+        name: p.Name ?? '',
+        lifetime_start: p.LifetimeStart ?? '',
+        lifetime_end: p.LifetimeEnd ?? '',
+        justification: p.Justification ?? '',
+        
+        locations: (p.Locations || []).map(l => ({
+            id: String(l.ID),
+            ecosystem: l.Ecosystem ?? '',
+            extent_ha: l.Extent ?? 0,
+            country: l.Country ?? '',
+            position: (l.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+        })),
+
+        project_sdgs: (p.ProjectSdgs || []).map(s => ({
+            id: String(s.ID),
+            name: s.Name ?? '',
+            number: s.Number ?? 0,
+            icon_url: s.IconURL ?? ''
+        })),
+
+        project_proponents: (p.ProjectProponents || []).map(prop => ({
+            id: String(prop.ID),
+            project_id: String(prop.ProjectID),
+            proponent_id: String(prop.ProponentID),
+            role: prop.Role ?? '',
+        })),
+
+        activities: (p.Activities || []).map(a => ({
+            id: String(a.ID),
+            name: a.Name ?? '',
+            description: a.Description ?? '',
+            justification: a.Justification ?? '',
+            
+            activity_locations: (a.Locations || []).map(loc => ({
+                id: String(loc.ID),
+                ecosystem: loc.Ecosystem ?? '',
+                extent_ha: loc.Extent ?? 0,
+                country: loc.Country ?? '',
+                position: (loc.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+            })),
+
+            indicators: (a.Indicators || []).map(ind => ({
+                id: String(ind.ID),
+                name: ind.Name ?? '',
+                unit: ind.Unit ?? '',
+                value_baseline: ind.ValueBaseline ?? 0,
+                value_reference: ind.ValueReference ?? 0,
+                observation_method: ind.ObservationMethod ?? '',
+                justification: ind.Justification ?? '',
+                
+                observations: (ind.Observations || []).map(obs => ({
+                    id: String(obs.ID),
+                    date: obs.Date ?? '',
+                    value: obs.Value ?? 0,
+                    position: (obs.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+                }))
+            }))
+        }))
+    }));
+}
+
+export async function deleteProject(id: string, token: string): Promise<boolean> {
+	const response = await fetch(`${BRAIN_BASE_URL}/project/delete/${id}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao excluir projeto.'));
+	}
+
+	return true; 
+}
+
 export async function createLocation(input: CreateLocationInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
 		method: 'POST',
