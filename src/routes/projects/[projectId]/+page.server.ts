@@ -17,13 +17,11 @@ export const load: PageServerLoad = async (event) => {
             error(404, 'project not found');
         }
 
-        console.log(project);
 
         return {
             project
         };
     } catch (err: unknown) {
-        console.log(err);
         error(500, 'Internal Server Error');
     }
 };

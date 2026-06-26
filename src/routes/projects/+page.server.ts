@@ -51,7 +51,6 @@ export const actions: Actions = {
             }, token);
 			
 			if (!projectId) throw new Error("Erro ao cadastrar Projeto.");
-			console.log(projectId);
 
 			if (data.project_proponents.length > 0) {
 				const projectProponents = data.project_proponents.map(p => ({
