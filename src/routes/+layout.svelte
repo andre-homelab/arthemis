@@ -3,34 +3,57 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/ui/sidebar/AppSidebar.svelte';
+	import { Button } from "$lib/components/ui/button/index.js";
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { page } from '$app/state';
+	import { toggleMode } from "mode-watcher";
+	import { ModeWatcher } from 'mode-watcher';
+	import SunIcon from "@lucide/svelte/icons/sun";
+	import MoonIcon from "@lucide/svelte/icons/moon";
+	import { page } from '$app/stores';
 
 	let sidebarOpen = $state(true);
 	let { children } = $props();
+
+	let isLoginPage = $derived($page.url.pathname === '/login');
 </script>
 
+<ModeWatcher />
 <Toaster />
 
-<Sidebar.Provider bind:open={sidebarOpen}>
+{#if isLoginPage}
 	<div class="bg-background text-foreground flex h-screen w-full overflow-hidden">
-		<AppSidebar />
-		{#if !sidebarOpen}
-			<div class="sidebar-collapsed-trigger animate-in fade-in slide-in-from-left-4 duration-300">
-				<Sidebar.Trigger />
-			</div>
-		{/if}
-		<div class="flex flex-1 flex-col overflow-auto">
-			<main class="flex flex-1 flex-col">
-				{#key page.url.pathname}
-					<div class="flex flex-1 flex-col animate-in fade-in slide-in-from-bottom-3 duration-500 ease-out">
-						{@render children()}
-					</div>
-				{/key}
-			</main>
-		</div>
+		<main class="flex flex-1 flex-col">
+			{@render children()}
+		</main>
 	</div>
-</Sidebar.Provider>
+{:else}
+	<Sidebar.Provider bind:open={sidebarOpen}>
+		<div class="bg-background text-foreground flex h-screen w-full overflow-hidden">
+			<AppSidebar />
+			{#if !sidebarOpen}
+				<div class="sidebar-collapsed-trigger">
+					<Sidebar.Trigger />
+				</div>
+			{/if}
+			<div class="flex flex-1 flex-col overflow-auto relative">
+				<div class="absolute top-4 right-4 z-50">
+					<Button onclick={toggleMode} variant="outline" size="icon">
+						<SunIcon
+							class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
+						/>
+						<MoonIcon
+							class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0"
+						/>
+						<span class="sr-only">Toggle theme</span>
+					</Button>
+				</div>
+				<main class="pt-16 flex flex-1 flex-col">
+					{@render children()}
+				</main>
+			</div>
+		</div>
+	</Sidebar.Provider>
+{/if}
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 

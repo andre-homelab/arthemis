@@ -1,48 +1,23 @@
-export interface Activity {
-  id: string;
-  name: string;
-  indicators: Indicator[];
+import type { Indicator, Location, Observation } from "$lib/types";
+
+export interface ChartDataPoint {
+  date: Date;
+  [key: string]: number | Date;
+};
+
+export interface MapIndicator extends Indicator {
+  color: string;
 }
 
-export interface Indicator {
-  id: string;
+export interface MapObservation extends Observation {
   name: string;
   unit: string;
-  observations: Observation[];
-  color?: string;
-}
-
-export interface Observation {
-  id: string;
-  date: string;
-  value: number;
-  position: {
-    type: "Point";
-    coordinates: [number, number];
-  };
+  lng: number;
+  lat: number;  
+  color: string;
 }
 
 export interface ObservationMapProps {
-    projectLocation: ProjectLocation;
-    indicators?: Indicator[];
+    locations: Location[];
+    observations?: MapObservation[];
   }
-
-export interface Project {
-  id: string;
-  name: string;
-  lifetime_start: string;
-  lifetime_end: string;
-  location: ProjectLocation;
-  activities: Activity[];
-}
-
-export interface ProjectLocation {
-  id: string,
-  ecosystem: string,
-  extent_ha: number,
-  country: string,
-  position: {
-    type: "Polygon";
-    coordinates: number[][][]; // Default GeoJSON
-  };
-}

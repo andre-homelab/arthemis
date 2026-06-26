@@ -5,6 +5,7 @@
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import EyeIcon from '@lucide/svelte/icons/eye';
+	import SearchIcon from '@lucide/svelte/icons/search';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { SidebarItem, SidebarProps } from '$lib/components/ui/sidebar/types';
 
@@ -13,6 +14,11 @@
 			title: 'Dashboard',
 			url: '/',
 			icon: LayoutDashboardIcon
+		},
+		{
+			title: 'Busca Geral',
+			url: '/search',
+			icon: SearchIcon
 		},
 		{
 			title: 'Organizações',
@@ -94,8 +100,8 @@
 		font-family: var(--font-serif);
 		font-size: 1.5rem !important;
 		font-weight: 700 !important;
-		color: var(--color-sage-green-950) !important;
-		letter-spacing: -0.04em;
+		color: var(--sidebar-foreground) !important;
+		letter-spacing: -0.03em;
 		height: auto !important;
 		text-transform: none !important;
 		padding-bottom: 0.5rem;

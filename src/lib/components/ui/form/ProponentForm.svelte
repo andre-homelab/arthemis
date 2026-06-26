@@ -16,17 +16,21 @@
 		title = 'Nova Organização',
 		description = 'Preencha os dados da organização.',
 		submitLabel = 'Cadastrar Organização',
+		action = '?/create',
 		class: className
-	}: ProponentFormProps = $props();
+	}: ProponentFormProps & { action?: string } = $props();
 
 	const form = superForm(data, {
 		validators: zod4Client(proponentSchema),
 		onResult({ result }) {
 			if (result.type === 'success') {
-				toast.success(result.data?.message);
+				toast.success('Organização cadastrada com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
 			}
 			else if (result.type === 'error') {
-				toast.error('Erro desconhecido');
+				toast.error('Erro interno');
 			}
 		}
 	});
@@ -43,7 +47,7 @@
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" use:enhance class="form-body">
+		<form method="POST" {action} use:enhance class="form-body">
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}

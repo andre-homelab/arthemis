@@ -149,7 +149,7 @@
 		gap: 8px;
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: var(--muted-foreground);
+    	color: var(--foreground) !important;
 	}
 
 	.legend-dot {

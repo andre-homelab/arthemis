@@ -64,8 +64,8 @@
   }
 
   .metric-label {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
+    font-size: 14px;
+    color: var(--foreground) !important;
     font-weight: 500;
   }
 
@@ -75,10 +75,9 @@
   .metric-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--foreground);
-    margin-bottom: 0.25rem;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
+    color: var(--foreground) !important;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
   }
 
   .metric-change {

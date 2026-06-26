@@ -1,17 +1,30 @@
 <script lang="ts">
+	import ObservationList from '$lib/components/ObservationList.svelte';
 	import ObservationForm from '$lib/components/ui/form/ObservationForm.svelte';
-	import type { PageData } from './$types.js';
+	import type { ActionData, PageData } from './$types.js';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <div class="page-container">
 	<header class="page-header">
 		<h1 class="page-title">Observações</h1>
-		<p class="page-description">Cadastre as observações do sistema.</p>
+		<p class="page-description">Cadastre, edite e remova observações vinculadas aos indicadores.</p>
 	</header>
 
-	<ObservationForm data={data.form} />
+	{#if form?.message}
+		<p class:success-message={form.success} class:error-message={!form.success}>{form.message}</p>
+	{/if}
+
+	<ObservationForm data={data.form} indicators={data.indicators} action="?/create" />
+
+	<section class="panel list-panel">
+		<div class="section-heading">
+			<h2>Observações cadastradas</h2>
+		</div>
+
+		<ObservationList observations={data.observations} />
+	</section>
 </div>
 
 <style>
@@ -21,13 +34,21 @@
 		flex-direction: column;
 		padding: 32px;
 		gap: 24px;
-		max-width: 640px;
+		width: 100%;
+		max-width: 1120px;
+		margin: 0 auto;
+	}
+
+	.page-header,
+	.section-heading {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		align-items: flex-start;
 	}
 
 	.page-header {
-		display: flex;
 		flex-direction: column;
-		gap: 4px;
 	}
 
 	.page-title {
@@ -41,5 +62,44 @@
 		font-size: 0.875rem;
 		color: var(--muted-foreground);
 		margin: 0;
+	}
+
+	.panel {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: 20px;
+		background: var(--card);
+	}
+
+	h2 {
+		font-size: 1rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.success-message,
+	.error-message {
+		border-radius: 8px;
+		padding: 10px 12px;
+		font-size: 0.875rem;
+	}
+
+	.success-message {
+		background: color-mix(in srgb, var(--primary) 12%, transparent);
+		color: var(--primary);
+	}
+
+	.error-message {
+		background: color-mix(in srgb, var(--destructive) 12%, transparent);
+		color: var(--destructive);
+	}
+
+	@media (max-width: 920px) {
+		.page-container {
+			padding: 20px;
+		}
 	}
 </style>

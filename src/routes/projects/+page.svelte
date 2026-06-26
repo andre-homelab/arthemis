@@ -11,7 +11,7 @@
 		<p class="page-description">Cadastre os projetos vinculados às organizações.</p>
 	</header>
 
-	<ProjectForm data={data.form} proponents={data.proponents} />
+	<ProjectForm data={data.form} proponents={data.proponents} sdgs={data.sdgs}/>
 </div>
 
 <style>
