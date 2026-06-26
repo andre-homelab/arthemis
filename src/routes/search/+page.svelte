@@ -4,12 +4,13 @@
 	import OrganizationList from '$lib/components/OrganizationList.svelte';
 	import UserList from '$lib/components/UserList.svelte';
 	import ObservationList from '$lib/components/ObservationList.svelte';
+	import ProjectList from '$lib/components/ProjectList.svelte';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
 
 	let searchQuery = $state('');
-	let activeTab = $state<'all' | 'organizations' | 'users' | 'observations'>('all');
+	let activeTab = $state<'all' | 'organizations' | 'users' | 'observations' | 'projects'>('all');
 
 	// Filtro local para organizações
 	let filteredOrgs = $derived(
@@ -54,8 +55,20 @@
 		})
 	);
 
+	let filteredProjects = $derived(
+		data.projects.filter((project) => {
+			const query = searchQuery.trim().toLowerCase();
+			if (!query) return true;
+			return (
+				project.id.toString().includes(query) ||
+				project.name.toLowerCase().includes(query) ||
+				project.locations?.some(l => l.ecosystem.toLowerCase().includes(query))
+			);
+		})
+	);
+
 	let totalResults = $derived(
-		filteredOrgs.length + filteredUsers.length + filteredObservations.length
+		filteredOrgs.length + filteredUsers.length + filteredObservations.length + filteredProjects.length
 	);
 </script>
 
@@ -87,6 +100,12 @@
 				onclick={() => (activeTab = 'all')}
 			>
 				Tudo ({totalResults})
+			</button>
+			<button
+				class="tab-button {activeTab === 'projects' ? 'active' : ''}"
+				onclick={() => (activeTab = 'projects')}
+			>
+				Projetos ({filteredProjects.length})
 			</button>
 			<button
 				class="tab-button"
@@ -121,6 +140,17 @@
 				</p>
 			</div>
 		{:else}
+			{#if activeTab === 'all' || activeTab === 'projects'}
+				<div class="panel">
+					<div class="panel-header">
+						<h2>Projetos</h2>
+						<span class="count-badge">{filteredProjects.length}</span>
+					</div>
+					
+					<ProjectList projects={filteredProjects} />
+				</div>
+			{/if}
+
 			<!-- Seção de Organizações -->
 			{#if (activeTab === 'all' || activeTab === 'organizations') && filteredOrgs.length > 0}
 				<section class="panel result-panel">
@@ -159,6 +189,7 @@
 					</div>
 				</section>
 			{/if}
+
 		{/if}
 	</div>
 </div>

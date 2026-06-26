@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import RecordActions from '$lib/components/RecordActions.svelte';
 	import type { ObservationRecord } from '$lib/types.js';
+	import { toast } from 'svelte-sonner';
 
-	let { observations }: { observations: ObservationRecord[] } = $props();
-
+	let { observations: initial }: { observations: ObservationRecord[] } = $props();
+	let observations = $state(initial);
+	
 	let searchQuery = $state('');
 
 	let filteredObservations = $derived(
@@ -21,6 +22,32 @@
 			);
 		})
 	);
+
+async function handleFileUpload(event: Event, observationId: number | string) {
+	const input = event.target as HTMLInputElement;
+	const file = input.files?.[0];
+	
+	if (!file) return;
+
+	try {
+		const content = await file.text();
+		
+		const geoJson = JSON.parse(content);
+		const jsonString = JSON.stringify(geoJson);
+
+		const index = observations.findIndex(o => o.id === observationId);
+		if (index !== -1) {
+			observations[index].positionText = jsonString; 
+		}
+
+		toast.success('Arquivo GeoJSON carregado com sucesso!');
+		
+		input.value = ''; 
+	} catch (error) {
+		input.value = '';
+		toast.error('Erro ao ler o arquivo. Certifique-se de que é um JSON válido.');
+	}
+}
 </script>
 
 <div class="list-container">
@@ -82,13 +109,8 @@
 							<Input name="date" type="date" value={observation.date} required />
 						</label>
 						<label class="position-field">
-							<span>Posição GeoJSON</span>
-							<Textarea
-								name="position"
-								value={observation.positionText}
-								required
-								class="geojson-input"
-							/>
+							<span>Posição</span>
+							<Input onchange={(event) => handleFileUpload(event, observation.id)} type="file" accept=".json" placeholder="Ex:" class="p-0 rounded-md cursor-pointer text-xs text-muted-foreground bg-background file:h-full file:bg-secondary file:text-secondary-foreground file:border-0 file:px-4 file:mr-4 file:hover:bg-secondary/80 file:transition-colors file:items-center" />
 						</label>
 					</form>
 				</article>

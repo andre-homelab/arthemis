@@ -161,22 +161,23 @@
     padding: 0.5rem;
   }
 
-  .popup-title {
-    font-weight: 700;
+.popup-title {
+    font-weight: 600;
     font-size: 0.875rem;
-    margin: 0 0 0.25rem 0;
-    color: #111827;
+    margin: 0 0 4px 0;
+    color: var(--foreground);
   }
 
   .popup-value {
-    font-size: 0.875rem;
-    margin: 0 0 0.25rem 0;
-    color: #374151;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 2px 0;
   }
 
   .popup-date {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--muted-foreground);
     margin: 0;
   }
 </style>

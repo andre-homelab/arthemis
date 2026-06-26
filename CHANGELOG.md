@@ -13,6 +13,10 @@
 - Criada página de cadastro de observações - https://github.com/andre-homelab/arthemis/issues/38 - Tudo Feito
 - Adicionado CRUD nas página de organizações, usuários e observações - https://github.com/andre-homelab/arthemis/issues/40- Tudo Feito
 - Criada página de listagem geral - https://github.com/andre-homelab/arthemis/issues/44 - Tudo Feito
+- Pop-ups de confirmação - https://github.com/andre-homelab/arthemis/issues/43 - Tudo feito
+- Modo escuro - https://github.com/andre-homelab/arthemis/issues/42 - Tudo feito
+- Cadastro de JSON via arquivo - https://github.com/andre-homelab/arthemis/issues/46 - Tudo feito
+- Página de detalhamento de projetos dinâmica - https://github.com/andre-homelab/arthemis/issues/39 - Tudo feito
 
 ## UPDATE
 
