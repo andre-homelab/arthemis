@@ -24,7 +24,7 @@
                 <Card.Title class="text-xs">
                     {itemTitlePrefix} #{id + 1}
                 </Card.Title>
-                <Button type="button" variant="destructive" size="icon" class="h-8 w-8" onclick={() => onRemove(id)}>
+                <Button type="button" variant="destructive" size="icon" class="h-8 w-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer" onclick={() => onRemove(id)}>
                     ✕
                 </Button>
             </Card.Header>

@@ -3,13 +3,11 @@ import type {
 	AuthUser,
 	LoginResponse,
 	ProponentResponse,
-	ProponentOption,
 	ProponentRecord,
 	ObservationResponse,
 	ObservationRecord,
 	IndicatorResponse,
 	IndicatorRecord,
-	CreationResponse,
 	UserResponse,
 	UserRecord,
 	CreateProponentInput,
@@ -17,10 +15,15 @@ import type {
 	UpdateUserInput,
 	CreateProjectInput,
 	CreateLocationInput,
-	CreateActivityInput,
-	CreateIndicatorInput,
-	CreateObservationInput,
-	UpdateObservationInput
+    Project,
+    ProjectResponse,
+    SdgResponse,
+    CreateActivityInput,
+    CreateIndicatorInput,
+    CreateObservationInput,
+    UpdateObservationInput,
+	CreateProjectProponentInput,
+	SdgOption
 } from '$lib/types';
 
 /**
@@ -36,7 +39,6 @@ const AUTH_BASE_URL = env.ARTHEMIS_AUTH_URL;
  * Fallback padrão: http://localhost:8081
  */
 const BRAIN_BASE_URL = env.ARTHEMIS_BRAIN_URL;
-
 
 /**
  * Auxiliar para analisar erros retornados das APIs.
@@ -321,6 +323,16 @@ export async function listUsers(token: string): Promise<UserRecord[]> {
 	const response = await fetch(`${BRAIN_BASE_URL}/user/`, {
 		headers: { Authorization: `Bearer ${token}` }
 	});
+
+	if (!response.ok) {
+		throw new Error(await parseError(response, 'Erro ao listar usuários.'));
+	}
+
+	const users = (await response.json()) as UserResponse[];
+
+	return users.map(normalizeUser).filter((user) => user.id);
+}
+
 export async function listSdgs(token?: string): Promise<SdgOption[]> {
 	const response = await fetch(`${BRAIN_BASE_URL}/sdg/`, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
@@ -340,15 +352,6 @@ export async function listSdgs(token?: string): Promise<SdgOption[]> {
 			iconUrl: sdg.IconURL
 		}))
 		.filter((sdg) => sdg.id && sdg.name && sdg.number && sdg.iconUrl);
-}
-
-	if (!response.ok) {
-		throw new Error(await parseError(response, 'Erro ao listar usuários.'));
-	}
-
-	const users = (await response.json()) as UserResponse[];
-
-	return users.map(normalizeUser).filter((user) => user.id);
 }
 
 export async function updateUser(
@@ -412,6 +415,82 @@ export async function createProject(
 	return projectId
 }
 
+export async function getProject(id: number, token: string): Promise<Project | null> {
+    const response = await fetch(`${BRAIN_BASE_URL}/project/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const p = await response.json() as ProjectResponse;
+
+    return {
+        id: String(p.ID),
+        name: p.Name,
+        lifetime_start: p.LifetimeStart,
+        lifetime_end: p.LifetimeEnd,
+        justification: p.Justification,
+        
+        locations: (p.Locations || []).map(l => ({
+            id: String(l.ID),
+            ecosystem: l.Ecosystem,
+            extent_ha: l.Extent,
+            country: l.Country,
+            position: (l.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+        })),
+
+        project_sdgs: (p.ProjectSdgs || []).map(s => ({
+            id: String(s.ID),
+            name: s.Name,
+            number: s.Number,
+            icon_url: s.IconURL
+        })),
+
+        project_proponents: (p.ProjectProponents || []).map(p => ({
+            id: String(p.ID),
+            project_id: String(p.ProjectID),
+            proponent_id: String(p.ProponentID),
+            role: p.Role,
+        })),
+
+        activities: (p.Activities || []).map(a => ({
+            id: String(a.ID),
+            name: a.Name ?? '',
+            description: a.Description ?? '',
+            justification: a.Justification ?? '',
+            
+            activity_locations: (a.Locations || []).map(loc => ({
+                id: String(loc.ID),
+                ecosystem: loc.Ecosystem ?? '',
+                extent_ha: loc.Extent ?? 0,
+                country: loc.Country ?? '',
+                position: (loc.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+            })),
+
+            indicators: (a.Indicators || []).map(ind => ({
+                id: String(ind.ID),
+                name: ind.Name ?? '',
+                unit: ind.Unit ?? '',
+                value_baseline: ind.ValueBaseline ?? 0,
+                value_reference: ind.ValueReference ?? 0,
+                observation_method: ind.ObservationMethod ?? '',
+                justification: ind.Justification ?? '',
+                
+                observations: (ind.Observations || []).map(obs => ({
+                    id: String(obs.ID),
+                    date: obs.Date ?? '',
+                    value: obs.Value ?? 0,
+                    position: (obs.Position ?? { type: 'Point', coordinates: [0, 0] }) as any
+                }))
+            }))
+        }))
+    };
+}
+
 export async function createLocation(input: CreateLocationInput[], token: string): Promise<number[] | null> {
 	const response = await fetch(`${BRAIN_BASE_URL}/location/create`, {
 		method: 'POST',
@@ -421,7 +500,7 @@ export async function createLocation(input: CreateLocationInput[], token: string
 			Ecosystem: l.ecosystem,
 			Country: l.country,
 			Extent: l.extentHa,
-			Position: JSON.parse(l.position)
+			Position: l.position
 		})))
 	});
 

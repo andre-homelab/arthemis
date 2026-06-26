@@ -13,7 +13,6 @@ import {
     createIndicator,
 } from '$lib/server/arthemis-api.js';
 
-
 export const load: PageServerLoad = async (event) => {
 	const token = event.locals.token;
 

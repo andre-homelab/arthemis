@@ -1,3 +1,5 @@
+import type { Geometry } from "geojson";
+
 /**
  * Estruturas de dados e contratos compartilhados entre o frontend e a API.
  */
@@ -54,9 +56,9 @@ export type IndicatorResponse = {
 	locationID?: number;
 	location_id?: number;
 	LocationID?: number;
+	ActivityID?: number,
 	activityID?: number;
 	activity_id?: number;
-	ActivityID?: number;
 	Name?: string;
 	name?: string;
 	Unit?: string;
@@ -69,6 +71,7 @@ export type IndicatorResponse = {
 	observationMethod?: string;
 	Justification?: string;
 	justification?: string;
+	Observations?: ObservationResponse[];
 };
 
 export type ProponentOption = {
@@ -139,6 +142,7 @@ export type CreateProjectInput = {
 	justification: string;
 	lifetimeStart: Date;
 	lifetimeEnd: Date;
+	sdgIds: number[];
 };
 
 export type CreateLocationInput = {
@@ -150,10 +154,11 @@ export type CreateLocationInput = {
 };
 
 export type CreateActivityInput = {
-	projectId: number;
+	projectId: number; 
 	name: string;
 	description: string;
 	justification: string;
+	locationIds: number[];
 };
 
 export type CreateIndicatorInput = {
@@ -176,3 +181,127 @@ export type CreateObservationInput = {
 };
 
 export type UpdateObservationInput = CreateObservationInput;
+
+export type SdgResponse = {
+	ID: number;
+	Name: string;
+	Number: number;
+	IconURL: string;
+};
+
+export type ProjectProponentResponse = {
+    ID: number;
+    ProponentID: number;
+    ProjectID: number;
+    Role: string;
+};
+
+export type CreateProjectProponentInput = {
+	projectId: number;
+	proponentId: number;
+	role: string;
+};
+
+export type LocationResponse = {
+    ID: number;
+    Ecosystem: string;
+    Extent: number;
+    Country: string;
+    Position: Geometry;
+};
+
+export type ActivityResponse = {
+    ID: number;
+	ProjectID: number;
+    Name: string;
+	Description: string;
+    Justification: string;
+    Locations?: LocationResponse[];
+    Indicators?: IndicatorResponse[];
+};
+
+export type ProjectResponse = {
+    ID: number;
+    Name: string;
+    LifetimeStart: string; 
+    LifetimeEnd: string;
+	Justification: string;
+    Locations?: LocationResponse[];
+    Activities?: ActivityResponse[];
+    ProjectProponents?: ProjectProponentResponse[];
+    ProjectSdgs?: SdgResponse[];
+};
+
+export type SdgOption = {
+	id: string;
+	name: string;
+	number: number;
+	iconUrl: string;
+};
+
+export interface Activity {
+  id: string;
+  name: string;
+  description: string;
+  justification: string;
+  activity_locations: Location[];
+  indicators: Indicator[];
+}
+
+export interface Indicator {
+  id: string;
+  name: string;
+  unit: string;
+  value_baseline: number;
+  value_reference: number;
+  observation_method: string;
+  justification: string;
+  observations: Observation[];
+}
+
+export interface Location {
+  id: string;
+  ecosystem: string;
+  extent_ha: number;
+  country: string;
+  position: Geometry;
+}
+
+export interface Observation {
+  id: string;
+  date: string;
+  value: number;
+  position: Geometry;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  lifetime_start: string;
+  lifetime_end: string;
+  justification: string;
+  locations: Location[];
+  project_sdgs: Sdg[];
+  project_proponents: ProjectProponent[];
+  activities: Activity[];
+}
+
+export interface ProjectProponent {
+  id: string;
+  project_id: string;
+  proponent_id: string;
+  role: string;
+}
+
+export interface Proponent {
+    id: string;
+    name: string;
+    email: string
+}
+
+export interface Sdg {
+  id: string;
+  name: string;
+  number: number;
+  icon_url: string;
+}

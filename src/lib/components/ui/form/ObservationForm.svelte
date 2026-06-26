@@ -6,13 +6,13 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { ObservationProps } from './types.js';
 	import { CalendarDate, getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import { untrack } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		data,
@@ -26,10 +26,21 @@
 
 	const form = superForm(data, {
 		validators: zod4Client(observationSchema),
-		dataType: 'json'
+		dataType: 'json',
+		onResult({ result }) {
+			if (result.type === 'success' ) {
+				toast.success('Projeto cadastrado com sucesso!');
+			}
+			else if (result.type === 'failure') {
+				toast.error('Verifique as informações inseridas e tente novamente');
+			}
+			else if (result.type === 'error') {
+				toast.error('Erro interno');
+			}
+		}
 	});
 
-	const { form: formData, enhance, submitting } = form;
+	const { form: formData, enhance, submitting, errors } = form;
 
 	const observationTriggerContent = $derived(
 		indicators.find((i) => String(i.id) === String($formData.indicator_id))?.name ?? 'Selecione um indicador'
@@ -81,6 +92,24 @@
 			$formData.position = position as never;
 		});
 	});
+
+	async function handleFileUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		
+		if (!file) return;
+
+		try {
+			const content = await file.text();
+
+			$formData.position = JSON.parse(content);
+
+			toast.success('Arquivo carregado com sucesso!');
+		} catch (error) {
+			input.value = '';
+			toast.error('Insira um arquivo JSON');
+		}
+	}
 </script>
 
 <Card.Root class={cn('form-card', className)}>
@@ -154,12 +183,7 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Posição</Form.Label>
-						<Textarea
-							{...props}
-							bind:value={positionText}
-							placeholder="GeoJSON da observação"
-							class="min-h-36 rounded-md font-mono text-sm"
-						/>
+						<Input onchange={(event) => handleFileUpload(event)} type="file" accept=".json" placeholder="Ex:" class="p-0 rounded-md cursor-pointer text-xs text-muted-foreground bg-background file:h-full file:bg-secondary file:text-secondary-foreground file:border-0 file:px-4 file:mr-4 file:hover:bg-secondary/80 file:transition-colors file:items-center" />
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
