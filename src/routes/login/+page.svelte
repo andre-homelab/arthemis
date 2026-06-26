@@ -1,11 +1,24 @@
 <script lang="ts">
 	import UserLogin from '$lib/components/ui/form/UserLogin.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { toggleMode } from 'mode-watcher';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="login-container">
+	<!-- Botão de toggle de tema -->
+	<div class="theme-toggle">
+		<Button onclick={toggleMode} variant="outline" size="icon">
+			<SunIcon class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90" />
+			<MoonIcon class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0" />
+			<span class="sr-only">Toggle theme</span>
+		</Button>
+	</div>
+
 	<div class="login-wrapper">
 		<div class="login-content">
 			<div class="login-header">
@@ -20,7 +33,7 @@
 
 			<div class="login-footer">
 				<p class="footer-text">
-					Não tem uma conta? <a href="/users" class="signup-link">Solicite cadastro</a>
+					Não tem uma conta? Solicite acesso com o administrador do sistema.
 				</p>
 			</div>
 		</div>
@@ -46,6 +59,18 @@
 		width: 100%;
 		background: linear-gradient(135deg, var(--color-sage-green-50) 0%, var(--color-sage-green-100) 100%);
 		padding: 20px;
+		position: relative;
+	}
+
+	:global(.dark) .login-container {
+		background: linear-gradient(135deg, var(--color-sage-green-950) 0%, var(--color-sage-green-900) 100%);
+	}
+
+	.theme-toggle {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		z-index: 10;
 	}
 
 	.login-wrapper {
@@ -58,7 +83,12 @@
 		border-radius: 16px;
 		overflow: hidden;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-		background: white;
+		background: var(--card);
+		border: 1px solid var(--border);
+	}
+
+	:global(.dark) .login-wrapper {
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 	}
 
 	.login-content {
@@ -66,7 +96,7 @@
 		flex-direction: column;
 		justify-content: space-between;
 		padding: 48px 40px;
-		background: white;
+		background: var(--card);
 		position: relative;
 		z-index: 2;
 	}
@@ -109,6 +139,7 @@
 	:global(.login-content .form-card) {
 		border: 1px solid var(--border);
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		background: var(--card);
 	}
 
 	:global(.login-content .form-card .card-header) {
@@ -189,6 +220,10 @@
 		overflow: hidden;
 	}
 
+	:global(.dark) .login-background {
+		background: linear-gradient(135deg, var(--color-sage-green-700) 0%, var(--color-sage-green-850) 100%);
+	}
+
 	.background-decoration {
 		position: absolute;
 		border-radius: 50%;
@@ -232,6 +267,7 @@
 		margin: 0 0 12px 0;
 		font-family: var(--font-serif);
 		letter-spacing: -0.5px;
+		color: white;
 	}
 
 	.background-text p {
@@ -240,6 +276,7 @@
 		opacity: 0.95;
 		line-height: 1.5;
 		max-width: 300px;
+		color: white;
 	}
 
 	/* Responsividade */
